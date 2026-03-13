@@ -28,7 +28,7 @@ import {
   createAutomation,
   updateAutomation,
   deleteAutomation as deleteAutomationApi,
-  toggleAutomation,
+  toggleAutomation as _toggleAutomation,
   apiRuleToFrontend,
   frontendRuleToApi,
   IS_DEMO,
