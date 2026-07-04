@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>DFRNT Rating Rewrite Prototype</title>
-  <link rel="stylesheet" href="./colors_and_type.css" />
+  <link rel="stylesheet" href="../skills/dfrnt-design-system/colors_and_type.css" />
   <style>
     * { box-sizing: border-box; }
     html, body { margin: 0; height: 100%; background: var(--bg-app); color: var(--fg-1); font-family: var(--font-ui); }
@@ -138,35 +138,33 @@
   <div class="app drawer-open" id="app">
     <aside class="sidebar">
       <div class="brand">
-        <div class="eyebrow">System / Configurator</div>
-        <h3>Rating</h3>
-        <p>One place for commercial rates, pricing components and service mapping.</p>
+        <div class="eyebrow">Business</div>
+        <h3>Pricing & Rating</h3>
+        <p>Commercial pricing, support data and schedule-linked rating behaviour in one Business workflow.</p>
       </div>
       <nav class="nav">
         <div class="nav-group">
-          <div class="nav-group-title">Rating</div>
-          <button class="nav-item active" data-view="overview">Overview</button>
-          <button class="nav-item" data-view="ratecards">Rate Cards</button>
+          <div class="nav-group-title">Business</div>
+          <button class="nav-item" data-view="clients">Clients / Customers</button>
+          <button class="nav-item active" data-view="overview">Pricing & Rating</button>
         </div>
         <div class="nav-group">
-          <div class="nav-group-title">Commercial rates</div>
+          <div class="nav-group-title">Pricing & Rating</div>
           <div class="nav-sub">
+            <button class="nav-item" data-view="ratecards">Rate Cards</button>
             <button class="nav-item" data-view="ondemand">On-Demand</button>
             <button class="nav-item" data-view="airfreight">Air Freight</button>
-            <button class="nav-item" data-view="routed">Scheduled / Routed</button>
-          </div>
-        </div>
-        <div class="nav-group">
-          <div class="nav-group-title">Components</div>
-          <div class="nav-sub">
             <button class="nav-item" data-view="charges">Charges & Accessorials</button>
             <button class="nav-item" data-view="breaks">Break Pricing</button>
             <button class="nav-item" data-view="units">Units & Measures</button>
           </div>
         </div>
         <div class="nav-group">
-          <div class="nav-group-title">Operational mapping</div>
-          <button class="nav-item" data-view="servicesetup">Service Rating Setup</button>
+          <div class="nav-group-title">Commercial structure</div>
+          <button class="nav-item" data-view="ratecodes">Rate Codes</button>
+          <button class="nav-item" data-view="pricing">Pricing</button>
+          <button class="nav-item" data-view="territory">Territory / rating support data</button>
+          <button class="nav-item" data-view="routed">schedule-linked rating behaviour</button>
         </div>
       </nav>
       <div class="sidebar-footer">
@@ -175,11 +173,22 @@
     </aside>
 
     <main class="main">
+      <section class="view" id="view-clients" hidden>
+        <div class="page-header">
+          <div><h1>Clients / Customers</h1><p>This stays as the customer list entry point. Row click opens the Client modal, with pricing and rating accessed from the Business structure beside it.</p></div>
+          <div class="header-actions"><button class="pill-btn secondary">Open client list</button><button class="pill-btn primary">+ New client</button></div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><div><h3>Client modal relationship</h3><p>Customer detail remains its own modal/workspace while pricing and rating become sibling Business navigation.</p></div><span class="badge info">Sibling module</span></div>
+          <div style="padding:16px; color: var(--fg-2); font-size: 14px;">Kerran’s client/customer modal starts here. Pricing & Rating, Rate Codes, Pricing, Territory / rating support data, and schedule-linked rating behaviour all sit alongside it under Business.</div>
+        </div>
+      </section>
+
       <section class="view" id="view-overview">
         <div class="page-header">
           <div>
-            <h1>Rating Overview</h1>
-            <p>Bring together rates, linked pricing components and service mapping without forcing users through buried System screens.</p>
+            <h1>Pricing & Rating Overview</h1>
+            <p>Fold core rating, support data and schedule-linked pricing behaviour into the agreed Business menu structure Kerran is building from.</p>
           </div>
           <div class="header-actions">
             <button class="pill-btn secondary">Import rates</button>
@@ -214,8 +223,8 @@
             </div>
           </div>
           <div class="card overview-card" data-view-jump="routed">
-            <div class="overview-title"><h3>Scheduled / Routed</h3><span class="badge warning">Builder flow</span></div>
-            <p class="body-sm">Multi-leg and bulk-distribution pricing with full editors for route logic and postcode clustering.</p>
+            <div class="overview-title"><h3>schedule-linked rating behaviour</h3><span class="badge warning">Builder flow</span></div>
+            <p class="body-sm">Multi-leg and bulk-distribution pricing with full editors for route logic and other schedule-linked commercial behaviour.</p>
             <div class="mini-metrics">
               <div class="mini"><div class="k">Templates</div><div class="v">18</div></div>
               <div class="mini"><div class="k">Bulk DCs</div><div class="v">5</div></div>
@@ -240,13 +249,13 @@
               <div class="mini"><div class="k">Linked</div><div class="v">7</div></div>
             </div>
           </div>
-          <div class="card overview-card" data-view-jump="servicesetup">
-            <div class="overview-title"><h3>Service Rating Setup</h3><span class="badge error">Needs cleanup</span></div>
-            <p class="body-sm">Service mapping, rating method behaviour, flags and operational linkage brought into one screen.</p>
+          <div class="card overview-card" data-view-jump="territory">
+            <div class="overview-title"><h3>Territory / rating support data</h3><span class="badge error">Needs cleanup</span></div>
+            <p class="body-sm">Zones, postcode scope, unit types and linked support entities brought into one coherent setup area.</p>
             <div class="mini-metrics">
-              <div class="mini"><div class="k">Services</div><div class="v">54</div></div>
+              <div class="mini"><div class="k">Zones</div><div class="v">54</div></div>
               <div class="mini"><div class="k">Unmapped</div><div class="v">3</div></div>
-              <div class="mini"><div class="k">Auto-dispatch</div><div class="v">18</div></div>
+              <div class="mini"><div class="k">Linked sets</div><div class="v">18</div></div>
             </div>
           </div>
         </div>
@@ -324,7 +333,7 @@
 
       <section class="view" id="view-routed" hidden>
         <div class="page-header">
-          <div><h1>Scheduled / Routed</h1><p>Use drawer summaries here, then drop into the richer route builder for multi-leg and bulk-distribution complexity.</p></div>
+          <div><h1>schedule-linked rating behaviour</h1><p>Use drawer summaries here, then drop into the richer route builder for multi-leg, bulk-distribution and other schedule-linked pricing complexity.</p></div>
           <div class="header-actions"><button class="pill-btn secondary">Open full builder</button><button class="pill-btn primary">+ New routed template</button></div>
         </div>
         <div class="split-grid">
@@ -399,7 +408,7 @@
 
       <section class="view" id="view-units" hidden>
         <div class="page-header">
-          <div><h1>Units & Measures</h1><p>Reusable unit types shared across extra charges, break groups and rate setup.</p></div>
+          <div><h1>Units & Measures</h1><p>Reusable unit types shared across extra charges, break groups and broader territory / rating support data.</p></div>
           <div class="header-actions"><button class="pill-btn primary">+ New unit type</button></div>
         </div>
         <div class="panel">
@@ -415,21 +424,66 @@
         </div>
       </section>
 
-      <section class="view" id="view-servicesetup" hidden>
+      <section class="view" id="view-ratecodes" hidden>
         <div class="page-header">
-          <div><h1>Service Rating Setup</h1><p>Operational services mapped to rating methods, flags and linked rate structures.</p></div>
-          <div class="header-actions"><button class="pill-btn primary">+ Map service</button></div>
+          <div><h1>Rate Codes</h1><p>Code setup and rating-code assignment concepts that need their own clean menu home under Business.</p></div>
+          <div class="header-actions"><button class="pill-btn primary">+ New rate code</button></div>
         </div>
         <div class="panel">
-          <div class="panel-header"><div><h3>Service mapping</h3><p>Pull service/rating logic out of old buried service forms.</p></div></div>
+          <div class="panel-header"><div><h3>Rate code mapping</h3><p>Keep code structure separate from the core rate-card and territory setup layers.</p></div></div>
           <table>
-            <thead><tr><th>Service</th><th>Rating Method</th><th>Tracking</th><th>Auto-dispatch</th><th>Flags</th><th>Linked rates</th></tr></thead>
+            <thead><tr><th>Code</th><th>Applies to</th><th>Rating Method</th><th>Flags</th><th>Status</th><th>Linked rates</th></tr></thead>
             <tbody>
-              <tr><td class="linkish">Express</td><td>Distance rate</td><td>Tracked POD</td><td>Yes</td><td>Web, Job Entry, FAF</td><td>22</td></tr>
-              <tr><td class="linkish">Air Critical</td><td>Flight rate</td><td>Air milestone</td><td>No</td><td>Job Entry, MFV</td><td>8</td></tr>
-              <tr><td class="linkish">Bulk Metro Outbound</td><td>Bulk distribution</td><td>Route scan</td><td>No</td><td>Scheduled only</td><td>4</td></tr>
+              <tr><td class="linkish">EXP_STD</td><td>Express</td><td>Distance rate</td><td>Web, Job Entry, FAF</td><td><span class="badge success">Active</span></td><td>22</td></tr>
+              <tr><td class="linkish">AIR_CRIT</td><td>Air Critical</td><td>Flight rate</td><td>Job Entry, MFV</td><td><span class="badge success">Active</span></td><td>8</td></tr>
+              <tr><td class="linkish">BULK_METRO</td><td>Bulk Metro Outbound</td><td>Bulk distribution</td><td>Scheduled only</td><td><span class="badge warning">Draft</span></td><td>4</td></tr>
             </tbody>
           </table>
+        </div>
+      </section>
+
+      <section class="view" id="view-pricing" hidden>
+        <div class="page-header">
+          <div><h1>Pricing</h1><p>Broader commercial pricing configuration adjacent to rating, including shared pricing rules and governance.</p></div>
+          <div class="header-actions"><button class="pill-btn secondary">Review rules</button><button class="pill-btn primary">+ New pricing rule</button></div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><div><h3>Commercial pricing rules</h3><p>Shared pricing constructs that sit beside rate-card setup.</p></div><span class="badge info">Adjacent layer</span></div>
+          <table>
+            <thead><tr><th>Rule</th><th>Scope</th><th>Type</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody>
+              <tr><td>National fuel overlay</td><td>All on-demand</td><td>Percent uplift</td><td><span class="badge success">Active</span></td><td class="linkish">Open</td></tr>
+              <tr><td>Medical handling minimum</td><td>Medical services</td><td>Minimum charge</td><td><span class="badge warning">Draft</span></td><td class="linkish">Review</td></tr>
+              <tr><td>After-hours surcharge default</td><td>Client fallback</td><td>Extra charge</td><td><span class="badge success">Active</span></td><td class="linkish">Open</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="view" id="view-territory" hidden>
+        <div class="page-header">
+          <div><h1>Territory / rating support data</h1><p>Zones, postcode/zip scope, unit types and support entities that the pricing structures depend on.</p></div>
+          <div class="header-actions"><button class="pill-btn secondary">Import support data</button><button class="pill-btn primary">+ New territory set</button></div>
+        </div>
+        <div class="split-grid">
+          <div class="panel">
+            <div class="panel-header"><div><h3>Support datasets</h3><p>Core territory and support entities that keep rating structures consistent.</p></div><span class="badge warning">Needs rationalisation</span></div>
+            <div class="component-list" style="padding: 16px;">
+              <div class="component-item"><div><h4>Zones</h4><p>Pickup/drop geography used by zone and routed pricing.</p></div><span class="badge info">54 active</span></div>
+              <div class="component-item"><div><h4>Postcode scope</h4><p>Zip/postcode constraints for distance and routed logic.</p></div><span class="badge warning">3 unresolved</span></div>
+              <div class="component-item"><div><h4>Unit types</h4><p>Shared dimensions used by extras and break pricing.</p></div><span class="badge success">Connected</span></div>
+              <div class="component-item"><div><h4>Accessorial support data</h4><p>Linked unit and rule metadata behind reusable charges.</p></div><span class="badge info">Reusable</span></div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-header"><div><h3>Health summary</h3><p>Make dependencies visible before rate setup breaks downstream.</p></div></div>
+            <div class="drawer-sections" style="padding: 16px;">
+              <div class="drawer-card"><h3>Current issues</h3><div class="review-list">
+                <div class="review-item"><div class="review-dot" style="background: var(--warning);"></div><div><strong>Metro South postcode set</strong><div class="caption">Needs tidy-up before final distance import.</div></div></div>
+                <div class="review-item"><div class="review-dot" style="background: var(--error);"></div><div><strong>2 unit mappings missing</strong><div class="caption">Break pricing cannot publish cleanly until matched.</div></div></div>
+              </div></div>
+            </div>
+          </div>
         </div>
       </section>
     </main>
