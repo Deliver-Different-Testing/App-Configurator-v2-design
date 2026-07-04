@@ -157,6 +157,7 @@
             <button class="nav-item" data-view="charges">Charges & Accessorials</button>
             <button class="nav-item" data-view="breaks">Break Pricing</button>
             <button class="nav-item" data-view="units">Units & Measures</button>
+            <button class="nav-item" data-view="induction">Rating Induction / Import</button>
           </div>
         </div>
         <div class="nav-group">
@@ -256,6 +257,15 @@
               <div class="mini"><div class="k">Zones</div><div class="v">54</div></div>
               <div class="mini"><div class="k">Unmapped</div><div class="v">3</div></div>
               <div class="mini"><div class="k">Linked sets</div><div class="v">18</div></div>
+            </div>
+          </div>
+          <div class="card overview-card" data-view-jump="induction">
+            <div class="overview-title"><h3>Rating Induction / Import</h3><span class="badge info">AI assisted</span></div>
+            <p class="body-sm">Use existing rate download/upload behaviour as the base, then add AI matching so spreadsheet pricing can be translated into the best-fit DFRNT structure.</p>
+            <div class="mini-metrics">
+              <div class="mini"><div class="k">Uploads</div><div class="v">12</div></div>
+              <div class="mini"><div class="k">High confidence</div><div class="v">7</div></div>
+              <div class="mini"><div class="k">Needs review</div><div class="v">5</div></div>
             </div>
           </div>
         </div>
@@ -482,6 +492,88 @@
                 <div class="review-item"><div class="review-dot" style="background: var(--warning);"></div><div><strong>Metro South postcode set</strong><div class="caption">Needs tidy-up before final distance import.</div></div></div>
                 <div class="review-item"><div class="review-dot" style="background: var(--error);"></div><div><strong>2 unit mappings missing</strong><div class="caption">Break pricing cannot publish cleanly until matched.</div></div></div>
               </div></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="view" id="view-induction" hidden>
+        <div class="page-header">
+          <div><h1>Rating Induction / Import</h1><p>Start from the current spreadsheet download/upload workflow, then add AI-assisted structure matching so tenant pricing can land in the right DFRNT model faster.</p></div>
+          <div class="header-actions"><button class="pill-btn secondary">Download template</button><button class="pill-btn primary">+ New induction run</button></div>
+        </div>
+
+        <div class="split-grid" style="margin-bottom: 14px;">
+          <div class="panel">
+            <div class="panel-header"><div><h3>Upload & intent</h3><p>Let the user explain what the spreadsheet is meant to achieve before AI starts matching structures.</p></div><span class="badge info">Step 1</span></div>
+            <div class="drawer-sections" style="padding:16px;">
+              <div class="drawer-card">
+                <h3>Source files</h3>
+                <div class="fields">
+                  <div class="field full"><div class="label">Workbook upload</div><input class="input" value="Rate Schedule July 2026.xlsx" /></div>
+                  <div><div class="label">Source type</div><select><option>Existing tenant spreadsheet</option></select></div>
+                  <div><div class="label">Import mode</div><select><option>AI-assisted induction</option></select></div>
+                </div>
+              </div>
+              <div class="drawer-card">
+                <h3>Natural language intent</h3>
+                <div class="label">Tell DFRNT what this spreadsheet is intended to do</div>
+                <textarea rows="6">This workbook is the tenant’s current same-day and urgent medical pricing. Most tabs are on-demand courier rates by zone and distance, but there is also an air-freight tab with security and critical surcharges. We want to recreate the current commercial logic as closely as possible inside DFRNT, keeping after-hours and medical handling as reusable charges where possible.</textarea>
+              </div>
+              <div class="drawer-card">
+                <h3>Why ask for intent?</h3>
+                <div class="review-list">
+                  <div class="review-item"><div class="review-dot" style="background: var(--success);"></div><div><strong>Disambiguates hybrid workbooks</strong><div class="body-sm">The user can say whether the goal is on-demand, air, routed, or a mix.</div></div></div>
+                  <div class="review-item"><div class="review-dot" style="background: var(--warning);"></div><div><strong>Preserves commercial intent</strong><div class="body-sm">The spreadsheet headers alone may not explain which bits are primary rates versus extras.</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header"><div><h3>Current-system bridge</h3><p>Keep what already exists instead of pretending induction is a blank-slate feature.</p></div><span class="badge warning">Existing capability</span></div>
+            <div class="component-list" style="padding:16px;">
+              <div class="component-item"><div><h4>Rate download</h4><p>Export current rate structures for editing and audit.</p></div><span class="badge success">Exists today</span></div>
+              <div class="component-item"><div><h4>Rate upload</h4><p>Upload edited rate sheets back into the system.</p></div><span class="badge success">Exists today</span></div>
+              <div class="component-item"><div><h4>AI induction layer</h4><p>Add interpretation, classification and mapping on top of the existing import/export path.</p></div><span class="badge info">New layer</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="split-grid">
+          <div class="panel">
+            <div class="panel-header"><div><h3>AI structure match</h3><p>Best-fit interpretation of the workbook into DFRNT pricing structures.</p></div><span class="badge info">Step 2</span></div>
+            <table>
+              <thead><tr><th>Candidate structure</th><th>Confidence</th><th>Why it matches</th><th>Action</th></tr></thead>
+              <tbody>
+                <tr><td>On-Demand → Zone Rates</td><td><span class="badge success">92%</span></td><td>Repeated from/to geography columns and fixed charge rows across same service groups.</td><td class="linkish">Accept</td></tr>
+                <tr><td>On-Demand → Distance Rates</td><td><span class="badge warning">78%</span></td><td>Base + per-mile pattern detected on one tab with distance bands and mileage charges.</td><td class="linkish">Review</td></tr>
+                <tr><td>Air Freight → Flight Rates</td><td><span class="badge success">88%</span></td><td>Security surcharge, critical surcharge and cargo breakpoint logic detected.</td><td class="linkish">Accept</td></tr>
+                <tr><td>schedule-linked rating behaviour</td><td><span class="badge error">34%</span></td><td>No strong route/leg pattern found; likely not the primary use of this workbook.</td><td class="linkish">Ignore</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header"><div><h3>Mapping & review</h3><p>Make confidence and ambiguity explicit before anything is published.</p></div><span class="badge info">Step 3</span></div>
+            <div class="drawer-sections" style="padding:16px;">
+              <div class="drawer-card">
+                <h3>Entity confidence</h3>
+                <div class="deps">
+                  <div class="dep"><div><strong>Services</strong><span>Express, Priority, Air Critical</span></div><span class="badge success">98% match</span></div>
+                  <div class="dep"><div><strong>Vehicles</strong><span>Car, Van, Truck</span></div><span class="badge warning">71% match</span></div>
+                  <div class="dep"><div><strong>Zones</strong><span>2 names unresolved against tenant geography</span></div><span class="badge error">Needs review</span></div>
+                  <div class="dep"><div><strong>Extra charges</strong><span>After-hours and medical handling inferred from notes</span></div><span class="badge warning">Review</span></div>
+                </div>
+              </div>
+              <div class="drawer-card">
+                <h3>Draft output</h3>
+                <div class="review-list">
+                  <div class="review-item"><div class="review-dot" style="background: var(--success);"></div><div><strong>Draft rate card shell ready</strong><div class="body-sm">Medical Air Priority + Default Auckland Metro proposed.</div></div></div>
+                  <div class="review-item"><div class="review-dot" style="background: var(--warning);"></div><div><strong>5 rows need human review</strong><div class="body-sm">Mixed zone naming and free-text surcharges need confirmation.</div></div></div>
+                  <div class="review-item"><div class="review-dot" style="background: var(--error);"></div><div><strong>No publish without sign-off</strong><div class="body-sm">Induction creates drafts; it should not silently activate pricing.</div></div></div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
