@@ -932,6 +932,65 @@ body { margin: 0; font-size: var(--text-md); line-height: var(--lh-norm); -webki
             </table>
           </div>
         </div>
+
+        <div class="split-grid" style="margin-top: 14px;">
+          <div class="panel">
+            <div class="panel-header"><div><h3>Final review & publish workflow</h3><p>Turn the inducted draft into a controlled commercial release with reviewer sign-off, version naming and activation rules.</p></div><span class="badge info">Final stage</span></div>
+            <div class="drawer-sections" style="padding:16px;">
+              <div class="drawer-card">
+                <h3>Release setup</h3>
+                <div class="fields">
+                  <div><div class="label">Draft version name</div><input class="input" value="Auckland Metro + Medical Air Import v1" /></div>
+                  <div><div class="label">Release mode</div><select><option>Review then activate</option></select></div>
+                  <div><div class="label">Effective start</div><input class="input" value="2026-07-08" /></div>
+                  <div><div class="label">Effective end</div><input class="input" value="Open" /></div>
+                  <div><div class="label">Supersede existing card</div><select><option>Yes — archive current active version</option></select></div>
+                  <div><div class="label">Rollback window</div><select><option>24 hours</option></select></div>
+                  <div class="field full"><div class="label">Release note</div><textarea rows="3">Imported tenant workbook into new DFRNT structures. Zone and air pricing matched automatically; 5 ambiguous rows excluded pending manual review.</textarea></div>
+                </div>
+              </div>
+              <div class="drawer-card">
+                <h3>Reviewer summary</h3>
+                <div class="deps">
+                  <div class="dep"><div><strong>Primary reviewer</strong><span>Kerran</span></div><span class="badge success">Assigned</span></div>
+                  <div class="dep"><div><strong>Business owner</strong><span>Steve</span></div><span class="badge warning">Approval needed</span></div>
+                  <div class="dep"><div><strong>Support-data dependencies</strong><span>2 zone aliases and 1 vehicle alias resolved</span></div><span class="badge success">Complete</span></div>
+                  <div class="dep"><div><strong>Residual exceptions</strong><span>2 excluded rows remain outside this release</span></div><span class="badge warning">Tracked</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header"><div><h3>Activation, supersede & rollback</h3><p>Make pricing activation explicit and reversible so induction never feels dangerous.</p></div><span class="badge info">Release controls</span></div>
+            <div class="drawer-sections" style="padding:16px;">
+              <div class="drawer-card">
+                <h3>Activation plan</h3>
+                <div class="review-list">
+                  <div class="review-item"><div class="review-dot" style="background: var(--success);"></div><div><strong>Draft can move to review</strong><div class="body-sm">No blocking dependency remains for the accepted rows.</div></div></div>
+                  <div class="review-item"><div class="review-dot" style="background: var(--warning);"></div><div><strong>Supersede current live version</strong><div class="body-sm">Current active Auckland Metro card will be archived, not deleted.</div></div></div>
+                  <div class="review-item"><div class="review-dot" style="background: var(--warning);"></div><div><strong>Excluded rows remain outside publish</strong><div class="body-sm">They are logged and carried as follow-up work, not silently dropped.</div></div></div>
+                </div>
+              </div>
+              <div class="drawer-card">
+                <h3>Rollback / recovery</h3>
+                <div class="review-list">
+                  <div class="review-item"><div class="review-dot" style="background: var(--success);"></div><div><strong>Rollback target stored</strong><div class="body-sm">Previous live rate-card version remains selectable as the instant restore point.</div></div></div>
+                  <div class="review-item"><div class="review-dot" style="background: var(--warning);"></div><div><strong>Change audit captured</strong><div class="body-sm">Every induced row, alias and operator override is retained against this release.</div></div></div>
+                  <div class="review-item"><div class="review-dot" style="background: var(--error);"></div><div><strong>Publish locked until sign-off</strong><div class="body-sm">Activation button stays disabled until reviewer + business owner approvals are both present.</div></div></div>
+                </div>
+              </div>
+              <div class="drawer-card">
+                <h3>Final actions</h3>
+                <div class="header-actions" style="justify-content:flex-start; gap:10px;">
+                  <button class="pill-btn secondary">Save review pack</button>
+                  <button class="pill-btn ghost">Request approval</button>
+                  <button class="pill-btn primary">Publish when approved</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
     </main>
 
