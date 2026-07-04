@@ -867,6 +867,71 @@ body { margin: 0; font-size: var(--text-md); line-height: var(--lh-norm); -webki
             </div>
           </div>
         </div>
+
+        <div class="panel" style="margin-top: 14px;">
+          <div class="panel-header"><div><h3>Source vs generated output</h3><p>Make the interpretation defensible by showing the source workbook meaning beside the draft DFRNT structures it will create.</p></div><span class="badge info">Step 7</span></div>
+          <div class="split-grid" style="padding:16px;">
+            <div class="drawer-card">
+              <h3>Source workbook view</h3>
+              <table>
+                <thead><tr><th>Sheet / Row</th><th>Source values</th><th>Interpretation notes</th></tr></thead>
+                <tbody>
+                  <tr><td class="mono">Metro Zone / 18</td><td>From: CBD · To: Inner East · Rate: 18.00 · Service: Same Day</td><td>Clear zone pair row with no surcharge ambiguity.</td></tr>
+                  <tr><td class="mono">Distance Rates / 9</td><td>Base: 14.00 · Incl: 5mi · Per mile: 1.85 · Vehicle: Small Van</td><td>Likely distance structure, but vehicle naming needs alias confirmation.</td></tr>
+                  <tr><td class="mono">Air Tab / 22</td><td>Base: 48.00 · Security: 6.50 · Critical: 18.00 · Break: 10kg</td><td>Flight-rate pattern with explicit cargo breakpoint.</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="drawer-card">
+              <h3>Generated DFRNT draft</h3>
+              <table>
+                <thead><tr><th>Draft entity</th><th>Result</th><th>Status</th></tr></thead>
+                <tbody>
+                  <tr><td>Zone Rate</td><td>Default Auckland Metro → CBD to Inner East → $18.00</td><td><span class="badge success">Ready</span></td></tr>
+                  <tr><td>Distance Rate</td><td>Draft band 0–5mi → base $14.00 → $1.85 per mile</td><td><span class="badge warning">Vehicle alias check</span></td></tr>
+                  <tr><td>Flight Rate</td><td>Medical Air Priority → base + security + critical + 10kg break</td><td><span class="badge success">Ready</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="split-grid" style="margin-top: 14px;">
+          <div class="panel">
+            <div class="panel-header"><div><h3>Alias / remap workflow</h3><p>Give the operator a fast way to normalise spreadsheet language into tenant-standard DFRNT entities.</p></div><span class="badge info">Operator tool</span></div>
+            <div class="drawer-sections" style="padding:16px;">
+              <div class="drawer-card">
+                <h3>Current remap action</h3>
+                <div class="fields">
+                  <div><div class="label">Source label</div><input class="input" value="Small Van" /></div>
+                  <div><div class="label">Detected type</div><input class="input" value="Vehicle alias" /></div>
+                  <div><div class="label">Map to existing</div><select><option>Van</option></select></div>
+                  <div><div class="label">Action</div><select><option>Create tenant alias</option></select></div>
+                  <div class="field full"><div class="label">Reason</div><textarea rows="3">Spreadsheet uses 'Small Van' but current DFRNT vehicle class is simply 'Van'. Apply this alias for this tenant on future induction runs.</textarea></div>
+                </div>
+              </div>
+              <div class="drawer-card">
+                <h3>Expected outcome</h3>
+                <div class="review-list">
+                  <div class="review-item"><div class="review-dot" style="background: var(--success);"></div><div><strong>Future rows auto-normalise</strong><div class="body-sm">The same source label will map cleanly next time.</div></div></div>
+                  <div class="review-item"><div class="review-dot" style="background: var(--info, var(--c-cyan));"></div><div><strong>Audit kept</strong><div class="body-sm">The alias decision is stored against the induction run and tenant support data.</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header"><div><h3>Induction run history & audit</h3><p>Track what was uploaded, what AI decided, what the operator overrode, and what finally got published.</p></div><span class="badge info">Audit trail</span></div>
+            <table>
+              <thead><tr><th>Run</th><th>Workbook</th><th>Result</th><th>Overrides</th><th>Published by</th><th>Action</th></tr></thead>
+              <tbody>
+                <tr><td class="mono">RUN-2026-07-04-003</td><td>Rate Schedule July 2026.xlsx</td><td><span class="badge warning">Draft saved</span></td><td>3 aliases · 2 exclusions</td><td>—</td><td class="linkish">Open</td></tr>
+                <tr><td class="mono">RUN-2026-07-02-011</td><td>Metro Courier Rates Q3.xlsx</td><td><span class="badge success">Published</span></td><td>1 alias</td><td>Steve</td><td class="linkish">Audit</td></tr>
+                <tr><td class="mono">RUN-2026-06-26-004</td><td>Air Pricing Legacy.xls</td><td><span class="badge error">Abandoned</span></td><td>7 unresolved rows</td><td>—</td><td class="linkish">Review</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </section>
     </main>
 
