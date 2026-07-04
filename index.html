@@ -806,6 +806,67 @@ body { margin: 0; font-size: var(--text-md); line-height: var(--lh-norm); -webki
             </div>
           </div>
         </div>
+
+        <div class="panel" style="margin-top: 14px;">
+          <div class="panel-header"><div><h3>Row-level mapping review</h3><p>Show exactly how source rows will be translated before the user accepts the draft build.</p></div><span class="badge info">Step 4</span></div>
+          <table>
+            <thead><tr><th>Source</th><th>Detected meaning</th><th>Matched DFRNT target</th><th>Confidence</th><th>Issue</th><th>Action</th></tr></thead>
+            <tbody>
+              <tr><td class="mono">Sheet: Metro Zone / Row 18</td><td>CBD → Inner East fixed courier rate</td><td>On-Demand → Zone Rate</td><td><span class="badge success">95%</span></td><td><span class="badge success">None</span></td><td class="linkish">Accept</td></tr>
+              <tr><td class="mono">Sheet: Distance Rates / Row 9</td><td>Base + mileage band</td><td>On-Demand → Distance Rate</td><td><span class="badge warning">76%</span></td><td><span class="badge warning">Vehicle unclear</span></td><td class="linkish">Remap</td></tr>
+              <tr><td class="mono">Sheet: Air Tab / Row 22</td><td>Critical flight surcharge with cargo breakpoint</td><td>Air Freight → Flight Rate</td><td><span class="badge success">89%</span></td><td><span class="badge success">None</span></td><td class="linkish">Accept</td></tr>
+              <tr><td class="mono">Sheet: Notes / Row 3</td><td>After-hours handling note</td><td>Charges & Accessorials → Extra Charge</td><td><span class="badge warning">61%</span></td><td><span class="badge error">Free-text only</span></td><td class="linkish">Review</td></tr>
+              <tr><td class="mono">Sheet: Regional / Row 41</td><td>Possible scheduled lane price</td><td>schedule-linked rating behaviour</td><td><span class="badge error">38%</span></td><td><span class="badge error">Insufficient structure</span></td><td class="linkish">Ignore</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="split-grid" style="margin-top: 14px;">
+          <div class="panel">
+            <div class="panel-header"><div><h3>Exceptions & unresolved items</h3><p>Surface what AI could not safely decide so the operator can clean it up deliberately.</p></div><span class="badge warning">Step 5</span></div>
+            <div class="drawer-sections" style="padding:16px;">
+              <div class="drawer-card">
+                <h3>Needs manual resolution</h3>
+                <div class="review-list">
+                  <div class="review-item"><div class="review-dot" style="background: var(--error);"></div><div><strong>Zone name mismatch</strong><div class="body-sm">“South East Industrial” does not match any current tenant zone dictionary entry.</div></div></div>
+                  <div class="review-item"><div class="review-dot" style="background: var(--warning);"></div><div><strong>Vehicle alias conflict</strong><div class="body-sm">Workbook uses both “1T Van” and “Small Van” for what may be the same vehicle class.</div></div></div>
+                  <div class="review-item"><div class="review-dot" style="background: var(--warning);"></div><div><strong>Free-text accessorial note</strong><div class="body-sm">“Call out fee applies after 8pm” should probably become a reusable extra charge.</div></div></div>
+                </div>
+              </div>
+              <div class="drawer-card">
+                <h3>Operator tools</h3>
+                <div class="deps">
+                  <div class="dep"><div><strong>Create alias</strong><span>Map old spreadsheet terms to DFRNT standard labels</span></div><span class="badge info">Fast fix</span></div>
+                  <div class="dep"><div><strong>Exclude row</strong><span>Hold an ambiguous row out of the draft build</span></div><span class="badge warning">Safe</span></div>
+                  <div class="dep"><div><strong>Force target structure</strong><span>Override AI and place a row into a different DFRNT model</span></div><span class="badge error">Advanced</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header"><div><h3>Draft output & publish readiness</h3><p>Show whether the draft is safe to save, ready for review, or publishable.</p></div><span class="badge info">Step 6</span></div>
+            <div class="drawer-sections" style="padding:16px;">
+              <div class="drawer-card">
+                <h3>Draft package summary</h3>
+                <div class="deps">
+                  <div class="dep"><div><strong>Draft rate cards</strong><span>2 proposed</span></div><span class="badge success">Ready</span></div>
+                  <div class="dep"><div><strong>Draft zone rates</strong><span>48 rows</span></div><span class="badge success">Ready</span></div>
+                  <div class="dep"><div><strong>Draft distance rates</strong><span>16 rows</span></div><span class="badge warning">Vehicle review needed</span></div>
+                  <div class="dep"><div><strong>Draft extra charges</strong><span>3 inferred</span></div><span class="badge warning">Review first</span></div>
+                </div>
+              </div>
+              <div class="drawer-card">
+                <h3>Publish gate</h3>
+                <div class="review-list">
+                  <div class="review-item"><div class="review-dot" style="background: var(--success);"></div><div><strong>Safe to save draft</strong><div class="body-sm">All interpreted rows can be stored with traceability back to workbook and sheet.</div></div></div>
+                  <div class="review-item"><div class="review-dot" style="background: var(--warning);"></div><div><strong>Not yet ready to publish</strong><div class="body-sm">5 unresolved rows and 2 support-data mismatches still require operator decisions.</div></div></div>
+                  <div class="review-item"><div class="review-dot" style="background: var(--error);"></div><div><strong>Activation lock remains</strong><div class="body-sm">Publishing stays disabled until unresolved items drop below the configured threshold or are explicitly waived.</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
     </main>
 
