@@ -254,6 +254,12 @@ body { margin: 0; font-size: var(--text-md); line-height: var(--lh-norm); -webki
     .nav-item.active { color: var(--c-cyan); background: rgba(59,199,244,.12); border-right-color: var(--c-cyan); }
     .nav-sub { margin-left: 12px; border-left: 1px solid rgba(255,255,255,.08); }
     .nav-sub .nav-item { padding-left: 20px; font-weight: 400; }
+    .sidebar-search { padding: 0 16px 14px; }
+    .sidebar-search input {
+      width: 100%; border: 1px solid rgba(255,255,255,.10); border-radius: 10px; background: rgba(255,255,255,.06);
+      color: var(--fg-on-dark); font: 400 13px var(--font-ui); padding: 11px 12px;
+    }
+    .sidebar-search input::placeholder { color: var(--fg-on-dark-3); }
     .sidebar-footer { margin-top: auto; padding: 14px 16px 0; border-top: 1px solid rgba(255,255,255,.08); }
     .pill-btn { border-radius: 999px; border: none; padding: 11px 16px; font: 600 13px var(--font-ui); cursor: pointer; }
     .pill-btn.primary { background: var(--c-cyan); color: var(--c-ink-blue); box-shadow: var(--shadow-cyan); }
@@ -378,6 +384,9 @@ body { margin: 0; font-size: var(--text-md); line-height: var(--lh-norm); -webki
         <div class="eyebrow">Business</div>
         <h3>Pricing & Rating</h3>
         <p>Commercial pricing, support data and schedule-linked rating behaviour in one Business workflow.</p>
+      </div>
+      <div class="sidebar-search">
+        <input type="search" placeholder="Search pricing, rates, schedules..." />
       </div>
       <nav class="nav">
         <div class="nav-group">
