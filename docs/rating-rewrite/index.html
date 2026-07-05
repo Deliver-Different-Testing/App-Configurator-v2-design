@@ -301,6 +301,14 @@ body { margin: 0; font-size: var(--text-md); line-height: var(--lh-norm); -webki
     .mini { background: var(--bg-surface); border-radius: 10px; padding: 10px; }
     .mini .k { color: var(--fg-2); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; }
     .mini .v { margin-top: 4px; font: 600 20px var(--font-display); }
+    .micro-schedule { border: 1px solid var(--border-light); border-radius: 10px; overflow: hidden; background: var(--bg-surface); }
+    .micro-schedule-head, .micro-schedule-row { display: grid; grid-template-columns: 1.4fr .8fr .7fr .7fr; gap: 8px; padding: 8px 10px; }
+    .micro-schedule-head { background: rgba(255,255,255,.8); border-bottom: 1px solid var(--border-light); font: 600 10px var(--font-ui); text-transform: uppercase; letter-spacing: .08em; color: var(--fg-2); }
+    .micro-schedule-row { font: 500 11px var(--font-ui); color: var(--fg-1); border-bottom: 1px solid var(--border-light); }
+    .micro-schedule-row:last-child { border-bottom: none; }
+    .micro-pill { display: inline-flex; align-items: center; justify-content: center; min-width: 42px; padding: 2px 8px; border-radius: 999px; font: 600 10px var(--font-ui); }
+    .micro-pill.success { background: var(--success-bg); color: var(--success); }
+    .micro-pill.warning { background: var(--warning-bg); color: var(--warning); }
 
     .panel { background: var(--c-white); border-radius: 12px; border: 1px solid var(--border-light); overflow: hidden; }
     .panel-header { padding: 14px 16px; border-bottom: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center; }
@@ -451,7 +459,13 @@ body { margin: 0; font-size: var(--text-md); line-height: var(--lh-norm); -webki
           </div>
           <div class="card overview-card" data-view-jump="routed">
             <div class="overview-title"><h3>schedule-linked rating behaviour</h3><span class="badge warning">Builder flow</span></div>
-            <p class="body-sm">Multi-leg and bulk-distribution pricing with full editors for route logic and other schedule-linked commercial behaviour.</p>
+            <p class="body-sm">Use Dane’s real schedules pattern: schedule list first, then full-screen editor for chain builder, legs, timeline, simulator and overrides.</p>
+            <div class="micro-schedule">
+              <div class="micro-schedule-head"><span>Schedule</span><span>Days</span><span>LH</span><span>Status</span></div>
+              <div class="micro-schedule-row"><span>Medical NI Shuttle</span><span>Mon–Fri</span><span>✓</span><span><span class="micro-pill success">Active</span></span></div>
+              <div class="micro-schedule-row"><span>Woop Metro Repl.</span><span>Mon–Sat</span><span>✓</span><span><span class="micro-pill success">Live</span></span></div>
+              <div class="micro-schedule-row"><span>Auckland Medical Bulk</span><span>Mon–Fri</span><span>✕</span><span><span class="micro-pill warning">Draft</span></span></div>
+            </div>
             <div class="mini-metrics">
               <div class="mini"><div class="k">Templates</div><div class="v">18</div></div>
               <div class="mini"><div class="k">Bulk DCs</div><div class="v">5</div></div>
