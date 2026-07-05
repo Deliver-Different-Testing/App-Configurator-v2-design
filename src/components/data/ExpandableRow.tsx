@@ -22,6 +22,7 @@ interface ExpandableRowProps {
   isExpanded: boolean;
   onToggle: () => void;
   onConnectionsClick: () => void;
+  actions?: ReactNode;
   children: ReactNode;
 }
 
@@ -36,6 +37,7 @@ export function ExpandableRow({
   isExpanded,
   onToggle,
   onConnectionsClick,
+  actions,
   children,
 }: ExpandableRowProps) {
   return (
@@ -74,6 +76,8 @@ export function ExpandableRow({
             size="sm"
           />
         </div>
+
+        {actions && <div onClick={(e) => e.stopPropagation()} className="flex items-center gap-1">{actions}</div>}
 
         {/* Chevron indicator */}
         <ChevronDown

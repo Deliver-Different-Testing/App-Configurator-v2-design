@@ -18,8 +18,8 @@ interface AddClientOverrideModalProps {
   schedules: Schedule[];
   clients: ClientReference[];
   onClose: () => void;
-  onApplyOverrides: (clientId: string, scheduleIds: string[], edits: BulkEditField[]) => void;
-  onViewSchedule: (scheduleId: string) => void;
+  onApplyOverrides: (clientId: number, scheduleIds: number[], edits: BulkEditField[]) => void;
+  onViewSchedule: (scheduleId: number) => void;
 }
 
 type Step = 'customer' | 'configure';
@@ -33,9 +33,9 @@ export function AddClientOverrideModal({
   onViewSchedule,
 }: AddClientOverrideModalProps) {
   const [step, setStep] = useState<Step>('customer');
-  const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
+  const [selectedClientId, setSelectedClientId] = useState<number | null>(null);
   const [clientSearch, setClientSearch] = useState('');
-  const [selectedScheduleIds, setSelectedScheduleIds] = useState<Set<string>>(
+  const [selectedScheduleIds, setSelectedScheduleIds] = useState<Set<number>>(
     new Set(group.scheduleIds)
   );
   const [editFields, setEditFields] = useState<BulkEditField[]>([]);
@@ -57,7 +57,7 @@ export function AddClientOverrideModal({
 
   const selectedClient = clients.find((c) => c.id === selectedClientId);
 
-  const toggleSchedule = (id: string) => {
+  const toggleSchedule = (id: number) => {
     setSelectedScheduleIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) {
@@ -108,30 +108,14 @@ export function AddClientOverrideModal({
             warningMessage = 'Reduced cutoff time';
           }
         }
-      } else if (firstField.field === 'pickupMinutesBefore') {
+      } else if (firstField.field === 'pickupTimeMode') {
         const collectionLeg = schedule.legs.find((l) => l.config.type === 'collection');
         const currentValue =
           collectionLeg?.config.type === 'collection'
-            ? collectionLeg.config.pickupMinutesBefore
-            : 60;
-        beforeValue = `${currentValue} min`;
-
-        if (firstField.mode === 'relative') {
-          const adjustment = Number(firstField.value) || 0;
-          const newValue = currentValue + adjustment;
-          afterValue = `${newValue} min`;
-
-          if (newValue < currentValue) {
-            warningLevel = 'caution';
-            warningMessage = 'Less pickup time';
-          }
-          if (newValue <= 0) {
-            warningLevel = 'conflict';
-            warningMessage = 'Invalid pickup time';
-          }
-        } else {
-          afterValue = `${firstField.value} min`;
-        }
+            ? collectionLeg.config.pickupTimeMode
+            : 'window';
+        beforeValue = currentValue;
+        afterValue = String(firstField.value);
       } else {
         beforeValue = '—';
         afterValue = String(firstField.value);
@@ -151,12 +135,12 @@ export function AddClientOverrideModal({
 
   const handleApply = () => {
     if (!selectedClientId) return;
-    onApplyOverrides(selectedClientId, Array.from(selectedScheduleIds), editFields);
+    onApplyOverrides(selectedClientId!, Array.from(selectedScheduleIds), editFields);
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-3xl max-h-[90vh] flex flex-col">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" data-testid="add-client-override-modal" role="dialog" aria-modal="true" aria-label="Add client override">
+      <div className="bg-white rounded-none md:rounded-xl shadow-xl w-full max-w-3xl h-full md:h-auto md:max-h-[90vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-border">
           <div>

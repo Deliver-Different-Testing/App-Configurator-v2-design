@@ -16,7 +16,7 @@ interface ScheduleListTabProps {
 }
 
 export function ScheduleListTab({ onConnectionsClick }: ScheduleListTabProps) {
-  const [expandedItem, setExpandedItem] = useState<string | null>(null);
+  const [expandedItem, setExpandedItem] = useState<number | null>(null);
   const [schedules, setSchedules] = useState<Schedule[]>(sampleSchedules);
   const [filters, setFilters] = useState<ScheduleFilterState>({
     search: '',
@@ -51,7 +51,7 @@ export function ScheduleListTab({ onConnectionsClick }: ScheduleListTabProps) {
 
       // Origin depot filter
       if (filters.originDepotId !== 'all') {
-        if (schedule.originDepotId !== filters.originDepotId) return false;
+        if (schedule.pickupDepotId !== filters.originDepotId) return false;
       }
 
       return true;
@@ -65,11 +65,11 @@ export function ScheduleListTab({ onConnectionsClick }: ScheduleListTabProps) {
 
     return baseSchedules.map((base) => ({
       base,
-      overrides: overrides.filter((o) => o.baseScheduleId === base.id),
+      overrides: overrides.filter((o) => o.baseScheduleName === base.name),
     }));
   }, [filteredSchedules]);
 
-  const handleToggle = (scheduleId: string) => {
+  const handleToggle = (scheduleId: number) => {
     setExpandedItem(expandedItem === scheduleId ? null : scheduleId);
   };
 
@@ -140,7 +140,7 @@ export function ScheduleListTab({ onConnectionsClick }: ScheduleListTabProps) {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-testid="schedule-list-tab" aria-label="schedule list tab">
       {/* Filters */}
       <div className="space-y-3">
         <SearchInput
@@ -184,7 +184,7 @@ export function ScheduleListTab({ onConnectionsClick }: ScheduleListTabProps) {
           <div key={base.id} className="space-y-1">
             {/* Base schedule row */}
             <ExpandableRow
-              id={base.id}
+              id={String(base.id)}
               name={base.name}
               badge={{
                 text: base.isActive ? 'Active' : 'Inactive',
@@ -203,7 +203,7 @@ export function ScheduleListTab({ onConnectionsClick }: ScheduleListTabProps) {
               onConnectionsClick={() =>
                 onConnectionsClick(
                   {
-                    id: base.id,
+                    id: String(base.id),
                     type: 'schedule',
                     name: base.name,
                     subtitle: getRouteDescription(base, sampleDepots),
@@ -229,15 +229,15 @@ export function ScheduleListTab({ onConnectionsClick }: ScheduleListTabProps) {
                 {overrides.map((override) => (
                   <ExpandableRow
                     key={override.id}
-                    id={override.id}
+                    id={String(override.id)}
                     name={override.name}
                     badge={{
                       text: 'Override',
                       variant: 'system',
                     }}
                     stats={[
-                      { label: 'Client', value: override.clientIds.length === 1 ? 'ACME' : `${override.clientIds.length} clients` },
-                      { label: 'Overrides', value: `${override.overriddenFields.length} fields` },
+                      { label: 'Client', value: override.clientId ? 'Specific Client' : 'All Clients' },
+                      { label: 'Overrides', value: 'Custom fields' },
                     ]}
                     connectionCount={countConnectedCategories(override.connections)}
                     hasConnectionIssues={false}
@@ -246,7 +246,7 @@ export function ScheduleListTab({ onConnectionsClick }: ScheduleListTabProps) {
                     onConnectionsClick={() =>
                       onConnectionsClick(
                         {
-                          id: override.id,
+                          id: String(override.id),
                           type: 'schedule',
                           name: override.name,
                           subtitle: `Override of ${base.name}`,

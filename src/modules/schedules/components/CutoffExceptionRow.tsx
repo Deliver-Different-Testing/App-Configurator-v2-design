@@ -43,7 +43,7 @@ export function CutoffExceptionRow({
   const daysBefore = getDaysBetween(exception.cutoffDay, exception.deliveryDay);
 
   return (
-    <div className="flex items-center gap-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm">
+    <div className="flex items-center gap-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm" data-testid="cutoff-exception-row" aria-label="cutoff exception row">
       {/* Delivery Day */}
       <Select
         value={exception.deliveryDay}

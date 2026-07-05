@@ -46,7 +46,7 @@ export function BulkEditFieldSelector({ fields, onFieldsChange }: BulkEditFieldS
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-testid="bulk-edit-field-selector" aria-label="bulk edit field selector">
       {/* Existing fields */}
       {fields.map((field) => {
         const fieldDef = BULK_EDITABLE_FIELDS.find((f) => f.field === field.field);

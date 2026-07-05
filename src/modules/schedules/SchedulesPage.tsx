@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { PageHeader } from '../../components/layout/PageHeader';
 import { Tabs } from '../../components/layout/Tabs';
 import { Card } from '../../components/layout/Card';
@@ -7,7 +7,7 @@ import { SearchInput } from '../../components/filters/SearchInput';
 import { TagSidebar } from '../../components/tags';
 import { ImportExportButton } from '../../features/import-export/components/ImportExportButton';
 import { schedulesSchema } from '../../features/import-export/schemas';
-import { ScheduleTableView } from './components/ScheduleTableView';
+import { ScheduleTableView, type ScheduleTableViewHandle } from './components/ScheduleTableView';
 import { ScheduleGroupsTab } from './components/ScheduleGroupsTab';
 import type { SourceItem, EntityConnections } from '../territory/types';
 import { createEmptyConnections } from '../territory/types';
@@ -25,7 +25,7 @@ export function SchedulesPage() {
   const [tagSearch, setTagSearch] = useState('');
   const [tagSidebarOpen, setTagSidebarOpen] = useState(false);
   const [sidebarSourceItem, setSidebarSourceItem] = useState<SourceItem>({
-    id: '',
+    id: '0',
     type: 'schedule',
     name: '',
   });
@@ -33,8 +33,9 @@ export function SchedulesPage() {
     createEmptyConnections()
   );
   const [schedules, setSchedules] = useState<Schedule[]>(initialSchedules);
-  const [_scheduleGroups, setScheduleGroups] = useState<ScheduleGroup[]>(initialScheduleGroups);
+  const [scheduleGroups, setScheduleGroups] = useState<ScheduleGroup[]>(initialScheduleGroups);
   const [_selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(null);
+  const scheduleTableViewRef = useRef<ScheduleTableViewHandle>(null);
 
   const handleConnectionsClick = (sourceItem: SourceItem, connections: EntityConnections) => {
     setSidebarSourceItem(sourceItem);
@@ -50,8 +51,7 @@ export function SchedulesPage() {
   };
 
   const handleNewSchedule = () => {
-    // Will open the schedule editor modal/page
-    console.log('Create new schedule');
+    scheduleTableViewRef.current?.openNewSchedule();
   };
 
   const handleImportComplete = (result: {
@@ -65,7 +65,7 @@ export function SchedulesPage() {
   };
 
   const handleCopyGroup = useCallback(
-    (newGroupName: string, scheduleIds: string[], edits: BulkEditField[]) => {
+    (newGroupName: string, scheduleIds: number[], edits: BulkEditField[]) => {
       // Create copies of selected schedules
       const newSchedules: Schedule[] = scheduleIds.map((id) => {
         const original = schedules.find((s) => s.id === id);
@@ -73,7 +73,7 @@ export function SchedulesPage() {
 
         const copy: Schedule = {
           ...original,
-          id: `${original.id}-copy-${Date.now()}`,
+          id: original.id + Date.now(),
           name: `${original.name} (Copy)`,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
@@ -99,7 +99,7 @@ export function SchedulesPage() {
 
       // Create new group
       const newGroup: ScheduleGroup = {
-        id: `group-${Date.now()}`,
+        id: Date.now(),
         name: newGroupName,
         description: `Copied from original group`,
         scheduleIds: newSchedules.map((s) => s.id),
@@ -118,8 +118,42 @@ export function SchedulesPage() {
     [schedules]
   );
 
+  const handleDuplicateGroup = useCallback((group: ScheduleGroup) => {
+    const timestamp = Date.now();
+    const copiedSchedules = group.scheduleIds
+      .map((id, index) => {
+        const original = schedules.find((schedule) => schedule.id === id);
+        if (!original) return null;
+
+        return {
+          ...original,
+          id: timestamp + index,
+          name: `${original.name} (Copy)`,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+      })
+      .filter(Boolean) as Schedule[];
+
+    const copiedGroup: ScheduleGroup = {
+      ...group,
+      id: timestamp,
+      name: `${group.name} (Copy)`,
+      scheduleIds: copiedSchedules.map((schedule) => schedule.id),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    setSchedules((prev) => [...prev, ...copiedSchedules]);
+    setScheduleGroups((prev) => [...prev, copiedGroup]);
+  }, [schedules]);
+
+  const handleDeleteGroup = useCallback((group: ScheduleGroup) => {
+    setScheduleGroups((prev) => prev.filter((scheduleGroup) => scheduleGroup.id !== group.id));
+  }, []);
+
   const handleApplyClientOverrides = useCallback(
-    (clientId: string, scheduleIds: string[], edits: BulkEditField[]) => {
+    (clientId: number, scheduleIds: number[], edits: BulkEditField[]) => {
       const client = sampleClients.find((c) => c.id === clientId);
 
       const newOverrides: Schedule[] = scheduleIds.map((id) => {
@@ -128,15 +162,11 @@ export function SchedulesPage() {
 
         const override: Schedule = {
           ...base,
-          id: `${base.id}-override-${clientId}-${Date.now()}`,
+          id: base.id + 10000 + Date.now() % 10000,
           name: `${base.name} (${client?.shortName || client?.name || clientId})`,
           isOverride: true,
-          baseScheduleId: base.id,
-          clientVisibility: 'specific',
-          clientIds: [clientId],
-          overriddenFields: edits.map((e) => e.field),
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
+          clientId: clientId,
+          baseScheduleName: base.name,
         };
 
         // Apply edits
@@ -164,7 +194,7 @@ export function SchedulesPage() {
     [schedules]
   );
 
-  const handleViewScheduleFromGroup = useCallback((scheduleId: string) => {
+  const handleViewScheduleFromGroup = useCallback((scheduleId: number) => {
     const schedule = schedules.find((s) => s.id === scheduleId);
     if (schedule) {
       setSelectedSchedule(schedule);
@@ -184,31 +214,26 @@ export function SchedulesPage() {
       name: schedule.name,
       isActive: schedule.isActive,
       isOverride: schedule.isOverride,
-      baseScheduleId: schedule.baseScheduleId || '',
       originType: schedule.originType,
-      originDepotId: schedule.originDepotId || '',
       bookingMode: schedule.bookingMode,
-      clientVisibility: schedule.clientVisibility,
-      clientIds: schedule.clientIds.join(','),
-      defaultCollectionSpeedId: schedule.defaultPickupSpeedId || '',
-      defaultDeliverySpeedId: schedule.defaultDeliverySpeedId || '',
+      clientId: schedule.clientId ?? 'all',
+      defaultCollectionSpeedId: schedule.pickupRatingSpeed || '',
+      defaultDeliverySpeedId: schedule.speedId || '',
       operatingDays: activeDays.join(','),
       cutoffValue: schedule.operatingSchedule.cutoffValue,
       cutoffUnit: schedule.operatingSchedule.cutoffUnit,
-      createdAt: schedule.createdAt,
-      updatedAt: schedule.updatedAt,
     };
   });
 
   return (
-    <div className="min-h-screen bg-surface-light">
+    <div className="min-h-screen bg-surface-light" data-testid="schedules-page">
       {/* Header */}
-      <div className="px-6 pt-6 pb-3">
+      <div className="px-3 md:px-6 pt-4 md:pt-6 pb-3" data-testid="schedules-header">
         <PageHeader
           title="Schedules"
           subtitle="Configure delivery schedule templates and routing rules"
           actions={
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 md:gap-3 flex-wrap">
               <ImportExportButton
                 schema={schedulesSchema}
                 data={scheduleExportData}
@@ -223,12 +248,12 @@ export function SchedulesPage() {
       </div>
 
       {/* Main Content */}
-      <div className="px-6 pb-6">
+      <div className="px-3 md:px-6 pb-4 md:pb-6">
         <Card padding="none">
           <Tabs tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
 
           {/* Search + Filters Section */}
-          <div className="px-4 py-3 border-b border-border bg-white space-y-3">
+          <div className="px-3 md:px-4 py-3 border-b border-border bg-white space-y-3">
             {/* Search Row - Full Width */}
             <SearchInput
               value={searchQuery}
@@ -279,6 +304,7 @@ export function SchedulesPage() {
 
           {activeTab === 'schedules' && (
             <ScheduleTableView
+              ref={scheduleTableViewRef}
               onConnectionsClick={handleConnectionsClick}
               searchQuery={searchQuery}
               tagSearch={tagSearch}
@@ -289,7 +315,10 @@ export function SchedulesPage() {
               <ScheduleGroupsTab
                 onConnectionsClick={handleConnectionsClick}
                 schedules={schedules}
+                groups={scheduleGroups}
                 onCopyGroup={handleCopyGroup}
+                onDuplicateGroup={handleDuplicateGroup}
+                onDeleteGroup={handleDeleteGroup}
                 onApplyClientOverrides={handleApplyClientOverrides}
                 onViewSchedule={handleViewScheduleFromGroup}
               />

@@ -3,7 +3,7 @@ import { forwardRef, type SelectHTMLAttributes } from 'react';
 interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
   label?: string;
   error?: string;
-  options: { value: string; label: string }[];
+  options: { value: string | number; label: string }[];
 }
 
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(

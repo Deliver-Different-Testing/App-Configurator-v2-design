@@ -1,6 +1,6 @@
 // src/modules/schedules/components/ClientOverrideEditor.tsx
 import { useState } from 'react';
-import { Copy, AlertCircle } from 'lucide-react';
+import { Copy } from 'lucide-react';
 import { Button } from '../../../components/ui/Button';
 import { OverrideEditor } from './OverrideEditor';
 import { ClientSearch } from './ClientSearch';
@@ -20,7 +20,7 @@ interface ClientOverrideEditorProps {
   onSave: (schedule: Schedule) => void;
   onCancel: () => void;
   /** Called when user wants to copy this override to another client */
-  onCopyToClient: (targetClientId: string, sourceSchedule: Schedule) => void;
+  onCopyToClient: (targetClientId: number, sourceSchedule: Schedule) => void;
 }
 
 export function ClientOverrideEditor({
@@ -34,7 +34,7 @@ export function ClientOverrideEditor({
   onCopyToClient,
 }: ClientOverrideEditorProps) {
   const [showCopyPicker, setShowCopyPicker] = useState(false);
-  const [copyTargetClientId, setCopyTargetClientId] = useState<string | null>(null);
+  const [copyTargetClientId, setCopyTargetClientId] = useState<number | null>(null);
 
   const isNewOverride = !allSchedules.some((s) => s.id === schedule.id);
 
@@ -50,28 +50,17 @@ export function ClientOverrideEditor({
   };
 
   return (
-    <div className="h-full flex flex-col">
-      {/* Client Override Banner - Purple themed (brand-purple from design system) */}
-      <div className="border-l-4 border-brand-purple bg-brand-purple/5 p-4">
-        <div className="flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 text-brand-purple flex-shrink-0 mt-0.5" />
-          <div>
-            <h3 className="font-semibold text-brand-dark">
-              {isNewOverride ? 'Creating Override for:' : 'Editing Override for:'}
-            </h3>
-            <p className="text-lg font-bold text-brand-purple">{client.name}</p>
-            <p className="text-xs text-text-muted mt-1">
-              Changes here only affect this client, not the default schedule.
-            </p>
-          </div>
-        </div>
-      </div>
-
+    <div
+      className="h-full flex flex-col overflow-hidden"
+      data-testid="client-override-editor"
+      aria-label="client override editor"
+    >
       {/* Override Editor */}
       <div className="flex-1 overflow-y-auto">
         <OverrideEditor
           schedule={schedule}
           baseSchedule={baseSchedule}
+          clientName={client.name}
           onSave={onSave}
           onCancel={onCancel}
         />

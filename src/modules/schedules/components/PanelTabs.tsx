@@ -16,7 +16,7 @@ export function PanelTabs({ activeTab, onTabChange, clientOverrideCount }: Panel
   ];
 
   return (
-    <div className="flex border-b border-border bg-surface-light">
+    <div className="flex border-b border-border bg-surface-light" data-testid="panel-tabs" aria-label="panel tabs">
       {tabs.map((tab) => (
         <button
           key={tab.id}

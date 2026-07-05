@@ -6,9 +6,9 @@ import type { ClientReference, Schedule } from '../types';
 interface ClientSearchProps {
   clients: ClientReference[];
   schedules: Schedule[]; // To check which clients have overrides
-  baseScheduleId: string;
-  selectedClientId: string | null;
-  onSelectClient: (clientId: string | null) => void;
+  baseScheduleId: number;
+  selectedClientId: number | null;
+  onSelectClient: (clientId: number | null) => void;
 }
 
 export function ClientSearch({
@@ -22,10 +22,10 @@ export function ClientSearch({
 
   // Find which clients have overrides for this base schedule
   const clientsWithOverrides = useMemo(() => {
-    const overrideClientIds = new Set<string>();
+    const overrideClientIds = new Set<number>();
     schedules.forEach((s) => {
-      if (s.isOverride && s.baseScheduleId === baseScheduleId) {
-        s.clientIds.forEach((cid) => overrideClientIds.add(cid));
+      if (s.isOverride && s.id === baseScheduleId) {
+        if (s.clientId != null) overrideClientIds.add(s.clientId);
       }
     });
     return overrideClientIds;
@@ -43,7 +43,7 @@ export function ClientSearch({
   }, [clients, searchQuery]);
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3" data-testid="client-search" aria-label="client search">
       {/* Search input */}
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />

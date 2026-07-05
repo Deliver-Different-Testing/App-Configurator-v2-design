@@ -10,8 +10,8 @@ interface CopyGroupModalProps {
   group: ScheduleGroup;
   schedules: Schedule[];
   onClose: () => void;
-  onCreateCopies: (newGroupName: string, scheduleIds: string[], edits: BulkEditField[]) => void;
-  onViewSchedule: (scheduleId: string) => void;
+  onCreateCopies: (newGroupName: string, scheduleIds: number[], edits: BulkEditField[]) => void;
+  onViewSchedule: (scheduleId: number) => void;
 }
 
 type Step = 'select' | 'edit';
@@ -25,7 +25,7 @@ export function CopyGroupModal({
 }: CopyGroupModalProps) {
   const [step, setStep] = useState<Step>('select');
   const [newGroupName, setNewGroupName] = useState(`${group.name} (Copy)`);
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set(group.scheduleIds));
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set(group.scheduleIds));
   const [editFields, setEditFields] = useState<BulkEditField[]>([]);
 
   const memberSchedules = useMemo(
@@ -33,7 +33,7 @@ export function CopyGroupModal({
     [schedules, group.scheduleIds]
   );
 
-  const toggleSchedule = (id: string) => {
+  const toggleSchedule = (id: number) => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) {
@@ -85,29 +85,13 @@ export function CopyGroupModal({
             warningMessage = 'Reduced cutoff time';
           }
         }
-      } else if (firstField.field === 'pickupMinutesBefore') {
+      } else if (firstField.field === 'pickupTimeMode') {
         const collectionLeg = schedule.legs.find((l) => l.config.type === 'collection');
         const currentValue = collectionLeg?.config.type === 'collection'
-          ? collectionLeg.config.pickupMinutesBefore
-          : 60;
-        beforeValue = `${currentValue} min`;
-
-        if (firstField.mode === 'relative') {
-          const adjustment = Number(firstField.value) || 0;
-          const newValue = currentValue + adjustment;
-          afterValue = `${newValue} min`;
-
-          if (newValue < currentValue) {
-            warningLevel = 'caution';
-            warningMessage = 'Less pickup time';
-          }
-          if (newValue <= 0) {
-            warningLevel = 'conflict';
-            warningMessage = 'Invalid pickup time';
-          }
-        } else {
-          afterValue = `${firstField.value} min`;
-        }
+          ? collectionLeg.config.pickupTimeMode
+          : 'window';
+        beforeValue = currentValue;
+        afterValue = String(firstField.value);
       } else {
         beforeValue = '—';
         afterValue = String(firstField.value);
@@ -130,8 +114,8 @@ export function CopyGroupModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-3xl max-h-[90vh] flex flex-col">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" data-testid="copy-group-modal" aria-label="copy group modal">
+      <div className="bg-white rounded-none md:rounded-xl shadow-xl w-full max-w-3xl h-full md:h-auto md:max-h-[90vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-border">
           <div>
@@ -208,7 +192,7 @@ export function CopyGroupModal({
                             {schedule.operatingSchedule.cutoffValue} {schedule.operatingSchedule.cutoffUnit}
                           </td>
                           <td className="p-2 text-text-secondary">
-                            {schedule.defaultDeliverySpeedId || '—'}
+                            {schedule.speedId || '—'}
                           </td>
                         </tr>
                       ))}

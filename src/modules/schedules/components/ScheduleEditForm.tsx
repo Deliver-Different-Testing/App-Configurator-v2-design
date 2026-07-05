@@ -1,27 +1,24 @@
 // src/modules/schedules/components/ScheduleEditForm.tsx
-import { useState, useMemo } from 'react';
-import { ChevronDown, ChevronUp, Users } from 'lucide-react';
-import { Input } from '../../../components/ui/Input';
-import { Select } from '../../../components/ui/Select';
+import { useState, useMemo, useRef, useCallback } from 'react';
+import { AlertTriangle, ChevronDown, ChevronUp, Users } from 'lucide-react';
 import { Toggle } from '../../../components/ui/Toggle';
 import { Button } from '../../../components/ui/Button';
 import { ChainBuilder } from './ChainBuilder';
-import { LegConfigPanel } from './LegConfigPanel';
-import { OperatingScheduleSection } from './OperatingScheduleSection';
+import type { ChainBuilderHandle } from './ChainBuilder';
+import { validateRoute } from '../utils/routeValidation';
+import { DayPillsEditor } from './DayPillsEditor';
 import { TimelinePreview } from './TimelinePreview';
 import { BookingSimulator } from './BookingSimulator';
 import { ClientOverridesTab } from './ClientOverridesTab';
-import type { Schedule, ScheduleLeg, LegConfig, LegType, DayOfWeek } from '../types';
-import { BOOKING_MODES } from '../types';
+import type { Schedule, ScheduleLeg, LegConfig, LegType } from '../types';
+import { BOOKING_MODES, OVERRIDABLE_FIELDS } from '../types';
 import {
   sampleDepots,
   sampleSpeeds,
   sampleZones,
-  sampleClients,
 } from '../data/sampleData';
 
 export type EditFormTab = 'config' | 'clients';
-
 interface ScheduleEditFormProps {
   schedule: Schedule;
   allSchedules?: Schedule[];
@@ -29,6 +26,19 @@ interface ScheduleEditFormProps {
   onCancel: () => void;
   onTabChange?: (tab: EditFormTab) => void;
   isNew?: boolean;
+  overrideMode?: boolean;
+  baseSchedule?: Schedule;
+  overrideClientName?: string;
+}
+
+function valuesDiffer(a: unknown, b: unknown): boolean {
+  return JSON.stringify(a) !== JSON.stringify(b);
+}
+
+function readOverrideValue(schedule: Schedule, field: string): unknown {
+  if (field === 'operatingSchedule.cutoffValue') return schedule.operatingSchedule.cutoffValue;
+  if (field === 'operatingSchedule.days') return schedule.operatingSchedule.days;
+  return schedule[field as keyof Schedule];
 }
 
 export function ScheduleEditForm({
@@ -38,33 +48,37 @@ export function ScheduleEditForm({
   onCancel,
   onTabChange,
   isNew = false,
+  overrideMode = false,
+  baseSchedule,
+  overrideClientName,
 }: ScheduleEditFormProps) {
-  // Local state for form values
   const [formSchedule, setFormSchedule] = useState<Schedule>(initialSchedule);
-  const [selectedLegId, setSelectedLegId] = useState<string | null>(null);
-  const [previewDay, setPreviewDay] = useState<DayOfWeek>('mon');
+  const [selectedLegId, setSelectedLegId] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState<EditFormTab>('config');
+  const [saveState, setSaveState] = useState<'idle' | 'saved'>('idle');
+  const isOverrideMode = overrideMode || formSchedule.isOverride;
+  const [showDescription, setShowDescription] = useState(isOverrideMode || Boolean(initialSchedule.description || initialSchedule.displayDescription));
 
-  // Handle tab change and notify parent
+  const chainBuilderRef = useRef<ChainBuilderHandle>(null);
+
+  // SHOULD-FIX 14: Dirty-state tracking
+  const isDirty = useMemo(() => {
+    return JSON.stringify(formSchedule) !== JSON.stringify(initialSchedule);
+  }, [formSchedule, initialSchedule]);
+
   const handleTabChange = (tab: EditFormTab) => {
     setActiveTab(tab);
     onTabChange?.(tab);
   };
 
-  // Count client overrides for this schedule
   const clientOverrideCount = useMemo(() => {
     return allSchedules.filter(
-      (s) => s.isOverride && s.baseScheduleId === formSchedule.id
+      (s) => s.isOverride && s.baseScheduleName === formSchedule.name
     ).length;
-  }, [allSchedules, formSchedule.id]);
+  }, [allSchedules, formSchedule.name]);
 
-  // Collapsible sections state
   const [expandedSections, setExpandedSections] = useState({
-    header: true,
-    overview: true,
-    origin: true,
     chain: true,
-    operating: true,
     timeline: true,
     testSchedule: false,
   });
@@ -75,112 +89,66 @@ export function ScheduleEditForm({
 
   // Handlers
   const handleNameChange = (value: string) => {
+    if (isOverrideMode) {
+      setFormSchedule((prev) => ({ ...prev, displayName: value || undefined }));
+      return;
+    }
     setFormSchedule((prev) => ({ ...prev, name: value }));
   };
-
   const handleDescriptionChange = (value: string) => {
+    if (isOverrideMode) {
+      setFormSchedule((prev) => ({ ...prev, displayDescription: value || undefined }));
+      return;
+    }
     setFormSchedule((prev) => ({ ...prev, description: value }));
   };
-
   const handleActiveToggle = (checked: boolean) => {
     setFormSchedule((prev) => ({ ...prev, isActive: checked }));
   };
-
   const handleBookingModeChange = (mode: 'fixed_time' | 'window') => {
     setFormSchedule((prev) => ({ ...prev, bookingMode: mode }));
   };
-
-  const handleClientVisibilityChange = (visibility: 'all' | 'specific') => {
-    setFormSchedule((prev) => ({ ...prev, clientVisibility: visibility }));
-  };
-
-  const handleClientIdsChange = (clientIds: string[]) => {
-    setFormSchedule((prev) => ({ ...prev, clientIds }));
-  };
-
-  const handleSpeedChange = (
-    field: 'defaultDeliverySpeedId' | 'defaultPickupSpeedId' | 'defaultLinehaulSpeedId',
-    value: string
-  ) => {
-    setFormSchedule((prev) => ({ ...prev, [field]: value || undefined }));
-  };
-
-  const handleOriginTypeChange = (type: 'depot' | 'client_address') => {
-    setFormSchedule((prev) => ({ ...prev, originType: type }));
-  };
-
-  const handleOriginDepotChange = (depotId: string) => {
-    setFormSchedule((prev) => ({ ...prev, originDepotId: depotId || undefined }));
-  };
-
-  const handleFallbackDepotChange = (depotId: string) => {
-    setFormSchedule((prev) => ({ ...prev, fallbackDepotId: depotId || undefined }));
-  };
-
-  const handleLegUpdate = (legId: string, config: LegConfig) => {
+  const handleLegUpdate = (legId: number, config: LegConfig) => {
     setFormSchedule((prev) => ({
       ...prev,
       legs: prev.legs.map((leg) => (leg.id === legId ? { ...leg, config } : leg)),
     }));
   };
 
-  const handleAddLeg = (afterLegId: string, type: LegType) => {
-    // Generate new leg based on type
-    const newLegId = `leg-${Date.now()}`;
+  const handleSelectLeg = useCallback((legId: number) => {
+    if (selectedLegId === legId) {
+      setSelectedLegId(null);
+    } else {
+      setSelectedLegId(legId);
+    }
+  }, [selectedLegId]);
+
+  const handleAddLeg = (afterLegId: number, type: LegType) => {
+    const newLegId = Date.now();
     const afterLeg = formSchedule.legs.find((l) => l.id === afterLegId);
-    const insertOrder = afterLeg ? afterLeg.order + 1 : formSchedule.legs.length;
+    const insertOrder = afterLegId === 0 ? 0 : afterLeg ? afterLeg.order + 1 : formSchedule.legs.length;
 
     let newConfig: LegConfig;
     switch (type) {
       case 'collection':
-        newConfig = {
-          type: 'collection',
-          speedId: formSchedule.defaultPickupSpeedId,
-          pickupZoneIds: [],
-          pickupMinutesBefore: 120,
-          bookFromClientAddress: false,
-          createPickupJob: true,
-        };
+        newConfig = { type: 'collection', speedId: undefined, additionalItemChargingLogic: 'none', pickupZoneIds: [], pickupTimeMode: 'window', pickupWindowStart: '14:00', pickupWindowEnd: '16:00', bookFromClientAddress: false, createPickupJob: true, pickupSource: 'client_address' };
         break;
       case 'depot':
-        newConfig = {
-          type: 'depot',
-          depotId: sampleDepots[0].id,
-          dropoffLocationId: undefined,
-          storageState: undefined,
-        };
+        newConfig = { type: 'depot', depotId: sampleDepots[0].id, dropoffLocationId: undefined, storageState: undefined };
         break;
       case 'linehaul':
-        newConfig = {
-          type: 'linehaul',
-          runId: undefined,
-          speedId: formSchedule.defaultLinehaulSpeedId,
-          dayOffset: 1,
-          activeDays: ['mon', 'tue', 'wed', 'thu', 'fri'],
-          transitMinutes: 600,
-          insertToBulk: true,
-          rateCardId: undefined,
-        };
+        newConfig = { type: 'linehaul', speedId: undefined, additionalItemChargingLogic: 'none', runId: undefined, fromDepotId: undefined, toDepotId: undefined, dayOffset: 1, activeDays: ['mon', 'tue', 'wed', 'thu', 'fri'], transitMinutes: 600, insertToBulk: true };
         break;
       case 'delivery':
-        newConfig = {
-          type: 'delivery',
-          speedId: formSchedule.defaultDeliverySpeedId,
-          deliveryZoneIds: [],
-          deliveryState: undefined,
-          rateCardId: undefined,
-        };
+        newConfig = { type: 'delivery', speedId: undefined, additionalItemChargingLogic: 'none', deliveryZoneIds: [], deliveryState: undefined };
         break;
     }
 
-    const newLeg: ScheduleLeg = {
-      id: newLegId,
-      order: insertOrder,
-      config: newConfig,
-    };
-
-    // Insert the new leg and reorder
-    const updatedLegs = [...formSchedule.legs, newLeg]
+    const shiftedLegs = formSchedule.legs.map((leg) =>
+      leg.order >= insertOrder ? { ...leg, order: leg.order + 1 } : leg
+    );
+    const newLeg: ScheduleLeg = { id: newLegId, order: insertOrder, config: newConfig };
+    const updatedLegs = [...shiftedLegs, newLeg]
       .sort((a, b) => a.order - b.order)
       .map((leg, index) => ({ ...leg, order: index }));
 
@@ -188,11 +156,11 @@ export function ScheduleEditForm({
     setSelectedLegId(newLegId);
   };
 
-  const handleRemoveLeg = (legId: string) => {
+  const handleRemoveLeg = (legId: number) => {
+    if (!window.confirm('Are you sure you want to delete this leg?')) return;
     const updatedLegs = formSchedule.legs
       .filter((leg) => leg.id !== legId)
       .map((leg, index) => ({ ...leg, order: index }));
-
     setFormSchedule((prev) => ({ ...prev, legs: updatedLegs }));
     if (selectedLegId === legId) {
       setSelectedLegId(null);
@@ -203,47 +171,227 @@ export function ScheduleEditForm({
     setFormSchedule((prev) => ({ ...prev, operatingSchedule }));
   };
 
+  // MUST-FIX 6: Save success feedback
   const handleSave = () => {
-    onSave(formSchedule);
+    if (isOverrideMode && baseSchedule) {
+      const changedFields = [
+        ...OVERRIDABLE_FIELDS.map(({ field }) => field),
+        'isActive',
+        'bookingMode',
+        'displayName',
+        'displayDescription',
+      ].filter((field) => valuesDiffer(readOverrideValue(formSchedule, field), readOverrideValue(baseSchedule, field)));
+
+      onSave({
+        ...formSchedule,
+        overriddenFields: changedFields,
+        updatedAt: new Date().toISOString(),
+      });
+    } else {
+      onSave(formSchedule);
+    }
+    setSaveState('saved');
+    setTimeout(() => setSaveState('idle'), 2000);
   };
 
-  const selectedLeg = formSchedule.legs.find((l) => l.id === selectedLegId) || null;
+  // Timeline back-calculation: editing cutoff day/time in timeline writes back to cutoffValue/cutoffUnit
+  const handleTimelineFieldChange = useCallback((field: string, value: any) => {
+    if (field === 'cutoffValue' || field === 'cutoffUnit') {
+      setFormSchedule((prev) => ({
+        ...prev,
+        operatingSchedule: {
+          ...prev.operatingSchedule,
+          [field]: value,
+        },
+      }));
+    }
+  }, []);
+
+  // Click-to-navigate from timeline — scroll to network map and open popover on correct node
+  const handleTimelineStepClick = useCallback((legId: number) => {
+    chainBuilderRef.current?.selectLeg(legId);
+  }, []);
+
+  const routeErrors = useMemo(() => validateRoute(formSchedule.legs), [formSchedule.legs]);
+
+  const headerName = isOverrideMode
+    ? formSchedule.displayName || baseSchedule?.displayName || baseSchedule?.name || formSchedule.name
+    : formSchedule.name;
+  const headerDescription = isOverrideMode
+    ? formSchedule.displayDescription || baseSchedule?.displayDescription || baseSchedule?.description || ''
+    : formSchedule.description || '';
+
+  // Determine save button text
+  const saveButtonText = saveState === 'saved'
+    ? '✅ Saved'
+    : isOverrideMode
+      ? 'Save Override'
+      : isNew
+        ? 'Create Schedule'
+        : isDirty
+          ? 'Save Changes'
+          : 'Saved';
 
   return (
-    <div className="space-y-4">
-      {/* Network Map - Always visible at top (read-only overview of the delivery route) */}
+    <div
+      className={`space-y-4 ${!formSchedule.isActive ? 'opacity-60' : ''} ${
+        isOverrideMode ? 'rounded-lg border-2 border-amber-300 bg-amber-50/30 p-3' : ''
+      }`}
+      data-testid="schedule-edit-form"
+      aria-label="schedule edit form"
+    >
+      {isOverrideMode && (
+        <div
+          className="rounded-lg border border-amber-200 bg-[repeating-linear-gradient(135deg,rgba(251,191,36,0.16)_0,rgba(251,191,36,0.16)_8px,rgba(255,255,255,0.72)_8px,rgba(255,255,255,0.72)_16px)] p-1"
+          data-testid="override-mode-banner"
+        >
+          <div className="flex items-start gap-3 rounded-md border-l-4 border-amber-500 bg-white/95 p-4">
+            <div className="mt-0.5 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-md border border-amber-300 bg-amber-100 text-amber-700">
+              <AlertTriangle className="h-5 w-5" aria-hidden="true" />
+            </div>
+            <div className="min-w-0">
+              <h3 className="text-base font-semibold text-amber-950">
+                Editing client override · {overrideClientName || 'Client'}
+              </h3>
+              <p className="mt-1 text-sm font-medium text-text-secondary">
+                Based on {baseSchedule?.name || formSchedule.baseScheduleName || formSchedule.name}
+              </p>
+              <p className="mt-1 text-xs text-text-muted">
+                Same delivery-route editor. Non-overridable fields are locked in place for this client override.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MUST-FIX 1 & 3 & 5: Top header bar with name, active, day pills, booking mode */}
+      <div className="bg-white rounded-lg border border-border p-4">
+        <div className="flex items-start gap-4 flex-wrap">
+          {/* Editable name — large inline input */}
+          <div className="flex-1 min-w-[200px]">
+            {isOverrideMode && (
+              <div className="mb-1 flex items-center gap-2">
+                <label htmlFor="schedule-display-name" className="text-xs font-semibold uppercase tracking-wide text-text-muted">
+                  Display Name
+                </label>
+                <span className="rounded-full border border-amber-300 bg-amber-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-800">
+                  New
+                </span>
+              </div>
+            )}
+            <input
+              id={isOverrideMode ? 'schedule-display-name' : undefined}
+              aria-label={isOverrideMode ? 'Display Name' : 'Schedule Name'}
+              type="text"
+              value={headerName}
+              onChange={(e) => handleNameChange(e.target.value)}
+              placeholder={isOverrideMode ? baseSchedule?.name || 'Display Name' : 'Schedule Name'}
+              className="text-2xl font-bold text-text-primary bg-transparent border-none outline-none w-full placeholder:text-text-muted focus:ring-0 p-0"
+            />
+            {/* Description — small expandable subtitle */}
+            {showDescription || headerDescription ? (
+              <div className={isOverrideMode ? 'mt-2' : ''}>
+                {isOverrideMode && (
+                  <div className="mb-1 flex items-center gap-2">
+                    <label htmlFor="schedule-display-description" className="text-xs font-semibold uppercase tracking-wide text-text-muted">
+                      Display Description
+                    </label>
+                    <span className="rounded-full border border-amber-300 bg-amber-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-800">
+                      New
+                    </span>
+                  </div>
+                )}
+                <textarea
+                  id={isOverrideMode ? 'schedule-display-description' : undefined}
+                  aria-label={isOverrideMode ? 'Display Description' : 'Schedule Description'}
+                  value={headerDescription}
+                  onChange={(e) => handleDescriptionChange(e.target.value)}
+                  placeholder={isOverrideMode ? baseSchedule?.description || 'Display Description' : 'Add a description...'}
+                  className="w-full mt-1 text-sm text-text-secondary bg-transparent border-none outline-none resize-none placeholder:text-text-muted focus:ring-0 p-0"
+                  rows={isOverrideMode ? 2 : 1}
+                  onBlur={() => {
+                    if (!headerDescription && !isOverrideMode) setShowDescription(false);
+                  }}
+                />
+              </div>
+            ) : (
+              <button
+                onClick={() => setShowDescription(true)}
+                className="text-xs text-text-muted hover:text-brand-cyan mt-1"
+              >
+                + Add description
+              </button>
+            )}
+          </div>
+
+          {/* Right side controls */}
+          <div className="flex items-center gap-4 flex-wrap">
+            <Toggle label="Active" checked={formSchedule.isActive} onChange={handleActiveToggle} />
+            <div className="flex items-center gap-2">
+              {BOOKING_MODES.map((mode) => (
+                <label key={mode.value} className="flex items-center gap-1.5 cursor-pointer">
+                  <input type="radio" name="bookingMode" value={mode.value} checked={formSchedule.bookingMode === mode.value} onChange={() => handleBookingModeChange(mode.value)} className="border-border text-brand-cyan focus:ring-brand-cyan w-3.5 h-3.5" />
+                  <span className="text-xs text-text-secondary">{mode.label}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Day Pills — MUST-FIX 3: moved here from network map */}
+        {activeTab === 'config' && (
+          <div className="mt-3 pt-3 border-t border-border/50">
+            <DayPillsEditor
+              schedule={formSchedule.operatingSchedule}
+              onChange={handleOperatingScheduleChange}
+            />
+          </div>
+        )}
+      </div>
+
+      {/* MUST-FIX 5: "Delivery Route" (was "Network Map") */}
       <div className="bg-gradient-to-r from-surface-cream to-white rounded-lg border-2 border-brand-cyan/20">
         <div className="p-4">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <h3 className="text-sm font-semibold text-text-primary">Network Map</h3>
+              <h3 className="text-sm font-semibold text-text-primary">Delivery Route</h3>
               <span className="text-xs text-brand-cyan bg-brand-cyan/10 px-2 py-0.5 rounded">
                 {formSchedule.legs.length} legs
               </span>
             </div>
-            {activeTab === 'config' && !formSchedule.isOverride && (
-              <span className="text-xs text-text-muted">Click nodes to configure</span>
-            )}
-            {activeTab === 'clients' && (
-              <span className="text-xs text-text-muted italic">Route cannot be changed per client</span>
-            )}
           </div>
+
           <ChainBuilder
+            ref={chainBuilderRef}
             schedule={formSchedule}
             selectedLegId={activeTab === 'config' ? selectedLegId : null}
-            onSelectLeg={activeTab === 'config' ? setSelectedLegId : () => {}}
-            onAddLeg={activeTab === 'config' ? handleAddLeg : undefined}
-            onRemoveLeg={activeTab === 'config' ? handleRemoveLeg : undefined}
-            readOnly={activeTab === 'clients' || formSchedule.isOverride}
+            onSelectLeg={activeTab === 'config' ? handleSelectLeg : () => {}}
+            onUpdateLeg={activeTab === 'config' ? handleLegUpdate : undefined}
+            onAddLeg={activeTab === 'config' && !isOverrideMode ? handleAddLeg : undefined}
+            onRemoveLeg={activeTab === 'config' && !isOverrideMode ? handleRemoveLeg : undefined}
+            readOnly={activeTab === 'clients'}
+            lockedStructure={isOverrideMode}
+            overrideMode={isOverrideMode}
             depots={sampleDepots}
             speeds={sampleSpeeds}
             zones={sampleZones}
           />
+          {routeErrors.length > 0 && (
+            <div className="mt-3 space-y-1">
+              {routeErrors.map((err, i) => (
+                <div key={i} className={`text-xs px-3 py-1.5 rounded ${
+                  err.type === 'error' ? 'bg-red-50 text-red-700' : 'bg-yellow-50 text-yellow-700'
+                }`}>
+                  {err.type === 'error' ? '❌' : '⚠️'} {err.message}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Tab Navigation - Right below Network Map */}
-      {!formSchedule.isOverride && (
+      {/* Tab Navigation */}
+      {!isOverrideMode && (
         <div className="flex border-b border-border bg-white rounded-lg overflow-hidden shadow-sm">
           <button
             onClick={() => handleTabChange('config')}
@@ -274,374 +422,62 @@ export function ScheduleEditForm({
         </div>
       )}
 
-      {/* Tab Content */}
+      {/* Config Tab Content */}
       {activeTab === 'config' && (
         <>
-          {/* Header Section - Name, Description, Active */}
+          {/* MUST-FIX 5: "Weekly Schedule" (was "Timeline Preview") */}
           <div className="bg-white rounded-lg border border-border">
             <button
-              onClick={() => toggleSection('header')}
+              onClick={() => toggleSection('timeline')}
               className="w-full flex items-center justify-between p-4 text-left hover:bg-surface-cream transition-colors"
             >
-              <h3 className="text-sm font-semibold text-text-primary">
-                {isNew ? 'New Schedule' : 'Schedule Details'}
-              </h3>
-              {expandedSections.header ? (
-                <ChevronUp className="w-5 h-5 text-text-muted" />
-              ) : (
-                <ChevronDown className="w-5 h-5 text-text-muted" />
-              )}
+              <h3 className="text-sm font-semibold text-text-primary">Weekly Schedule</h3>
+              {expandedSections.timeline ? <ChevronUp className="w-5 h-5 text-text-muted" /> : <ChevronDown className="w-5 h-5 text-text-muted" />}
             </button>
-            {expandedSections.header && (
+            {expandedSections.timeline && (
               <div className="p-4 pt-0 space-y-4">
-                <Input
-                  label="Schedule Name"
-                  value={formSchedule.name}
-                  onChange={(e) => handleNameChange(e.target.value)}
-                  placeholder="e.g., Next Day Standard"
-                  required
-                />
-                <div>
-                  <label className="block text-sm font-medium text-text-primary mb-2">
-                    Description
-                  </label>
-                  <textarea
-                    value={formSchedule.description || ''}
-                    onChange={(e) => handleDescriptionChange(e.target.value)}
-                    placeholder="Optional description..."
-                    className="w-full px-3 py-2 rounded-lg border border-border bg-white text-text-primary
-                             placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-brand-cyan
-                             focus:border-brand-cyan transition-colors resize-none"
-                    rows={3}
-                  />
-                </div>
-                <Toggle
-                  label="Active"
-                  checked={formSchedule.isActive}
-                  onChange={handleActiveToggle}
+                <TimelinePreview
+                  schedule={formSchedule}
+                  onStepClick={handleTimelineStepClick}
+                  onFieldChange={handleTimelineFieldChange}
                 />
               </div>
             )}
           </div>
-          {/* Overview Section */}
+
+          {/* MUST-FIX 5: "Booking Tester" (was "Test Schedule") */}
           <div className="bg-white rounded-lg border border-border">
             <button
-              onClick={() => toggleSection('overview')}
+              onClick={() => toggleSection('testSchedule')}
               className="w-full flex items-center justify-between p-4 text-left hover:bg-surface-cream transition-colors"
             >
-              <h3 className="text-sm font-semibold text-text-primary">Overview</h3>
-          {expandedSections.overview ? (
-            <ChevronUp className="w-5 h-5 text-text-muted" />
-          ) : (
-            <ChevronDown className="w-5 h-5 text-text-muted" />
-          )}
-        </button>
-        {expandedSections.overview && (
-          <div className="p-4 pt-0 space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-text-primary mb-2">
-                  Booking Mode
-                </label>
-                <div className="space-y-2">
-                  {BOOKING_MODES.map((mode) => (
-                    <label key={mode.value} className="flex items-start gap-2 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="bookingMode"
-                        value={mode.value}
-                        checked={formSchedule.bookingMode === mode.value}
-                        onChange={() => handleBookingModeChange(mode.value)}
-                        className="mt-1 border-border text-brand-cyan focus:ring-brand-cyan"
-                      />
-                      <div>
-                        <div className="text-sm font-medium text-text-primary">{mode.label}</div>
-                        <div className="text-xs text-text-muted">{mode.description}</div>
-                      </div>
-                    </label>
-                  ))}
-                </div>
+              <h3 className="text-sm font-semibold text-text-primary">Booking Tester</h3>
+              {expandedSections.testSchedule ? <ChevronUp className="w-5 h-5 text-text-muted" /> : <ChevronDown className="w-5 h-5 text-text-muted" />}
+            </button>
+            {expandedSections.testSchedule && (
+              <div className="p-4 pt-0">
+                <BookingSimulator schedule={formSchedule} />
               </div>
-
-              <div>
-                <label className="block text-sm font-medium text-text-primary mb-2">
-                  Client Visibility
-                </label>
-                <div className="space-y-2">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="clientVisibility"
-                      value="all"
-                      checked={formSchedule.clientVisibility === 'all'}
-                      onChange={() => handleClientVisibilityChange('all')}
-                      className="border-border text-brand-cyan focus:ring-brand-cyan"
-                    />
-                    <span className="text-sm text-text-secondary">All Clients</span>
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="clientVisibility"
-                      value="specific"
-                      checked={formSchedule.clientVisibility === 'specific'}
-                      onChange={() => handleClientVisibilityChange('specific')}
-                      className="border-border text-brand-cyan focus:ring-brand-cyan"
-                    />
-                    <span className="text-sm text-text-secondary">Specific Clients</span>
-                  </label>
-                </div>
-                {formSchedule.clientVisibility === 'specific' && (
-                  <div className="mt-3">
-                    <Select
-                      value=""
-                      onChange={(e) => {
-                        if (e.target.value && !formSchedule.clientIds.includes(e.target.value)) {
-                          handleClientIdsChange([...formSchedule.clientIds, e.target.value]);
-                        }
-                      }}
-                      options={[
-                        { value: '', label: 'Select client...' },
-                        ...sampleClients
-                          .filter((c) => !formSchedule.clientIds.includes(c.id))
-                          .map((c) => ({ value: c.id, label: c.name })),
-                      ]}
-                    />
-                    {formSchedule.clientIds.length > 0 && (
-                      <div className="mt-2 flex flex-wrap gap-2">
-                        {formSchedule.clientIds.map((clientId) => {
-                          const client = sampleClients.find((c) => c.id === clientId);
-                          return (
-                            <span
-                              key={clientId}
-                              className="inline-flex items-center gap-1 px-2 py-1 rounded bg-brand-cyan/10 text-brand-cyan text-xs"
-                            >
-                              {client?.shortName || client?.name}
-                              <button
-                                onClick={() =>
-                                  handleClientIdsChange(
-                                    formSchedule.clientIds.filter((id) => id !== clientId)
-                                  )
-                                }
-                                className="hover:text-brand-dark"
-                              >
-                                ×
-                              </button>
-                            </span>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="border-t-2 border-border pt-4">
-              <h4 className="text-sm font-semibold text-text-primary mb-3">Speed Defaults</h4>
-              <div className="grid grid-cols-3 gap-4">
-                <Select
-                  label="Delivery Speed"
-                  value={formSchedule.defaultDeliverySpeedId || ''}
-                  onChange={(e) => handleSpeedChange('defaultDeliverySpeedId', e.target.value)}
-                  options={[
-                    { value: '', label: 'None' },
-                    ...sampleSpeeds.map((s) => ({ value: s.id, label: s.name })),
-                  ]}
-                />
-                <Select
-                  label="Pickup Speed"
-                  value={formSchedule.defaultPickupSpeedId || ''}
-                  onChange={(e) => handleSpeedChange('defaultPickupSpeedId', e.target.value)}
-                  options={[
-                    { value: '', label: 'None' },
-                    ...sampleSpeeds.map((s) => ({ value: s.id, label: s.name })),
-                  ]}
-                />
-                <Select
-                  label="Linehaul Speed"
-                  value={formSchedule.defaultLinehaulSpeedId || ''}
-                  onChange={(e) => handleSpeedChange('defaultLinehaulSpeedId', e.target.value)}
-                  options={[
-                    { value: '', label: 'None' },
-                    ...sampleSpeeds.map((s) => ({ value: s.id, label: s.name })),
-                  ]}
-                />
-              </div>
-            </div>
+            )}
           </div>
-        )}
-      </div>
-
-      {/* Origin Section */}
-      <div className="bg-white rounded-lg border border-border">
-        <button
-          onClick={() => toggleSection('origin')}
-          className="w-full flex items-center justify-between p-4 text-left hover:bg-surface-cream transition-colors"
-        >
-          <h3 className="text-sm font-semibold text-text-primary">Origin Configuration</h3>
-          {expandedSections.origin ? (
-            <ChevronUp className="w-5 h-5 text-text-muted" />
-          ) : (
-            <ChevronDown className="w-5 h-5 text-text-muted" />
-          )}
-        </button>
-        {expandedSections.origin && (
-          <div className="p-4 pt-0 space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-text-primary mb-2">
-                  Origin Type
-                </label>
-                <div className="space-y-2">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="originType"
-                      value="depot"
-                      checked={formSchedule.originType === 'depot'}
-                      onChange={() => handleOriginTypeChange('depot')}
-                      className="border-border text-brand-cyan focus:ring-brand-cyan"
-                    />
-                    <span className="text-sm text-text-secondary">Depot</span>
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="originType"
-                      value="client_address"
-                      checked={formSchedule.originType === 'client_address'}
-                      onChange={() => handleOriginTypeChange('client_address')}
-                      className="border-border text-brand-cyan focus:ring-brand-cyan"
-                    />
-                    <span className="text-sm text-text-secondary">Client Address</span>
-                  </label>
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                {formSchedule.originType === 'depot' && (
-                  <Select
-                    label="Origin Depot"
-                    value={formSchedule.originDepotId || ''}
-                    onChange={(e) => handleOriginDepotChange(e.target.value)}
-                    options={[
-                      { value: '', label: 'Select depot...' },
-                      ...sampleDepots.map((d) => ({ value: d.id, label: `${d.name} (${d.code})` })),
-                    ]}
-                  />
-                )}
-                {formSchedule.originType === 'client_address' && (
-                  <Select
-                    label="Fallback Depot (Optional)"
-                    value={formSchedule.fallbackDepotId || ''}
-                    onChange={(e) => handleFallbackDepotChange(e.target.value)}
-                    options={[
-                      { value: '', label: 'None' },
-                      ...sampleDepots.map((d) => ({ value: d.id, label: `${d.name} (${d.code})` })),
-                    ]}
-                  />
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Operating Schedule Section */}
-      <div className="bg-white rounded-lg border border-border">
-        <button
-          onClick={() => toggleSection('operating')}
-          className="w-full flex items-center justify-between p-4 text-left hover:bg-surface-cream transition-colors"
-        >
-          <h3 className="text-sm font-semibold text-text-primary">Operating Schedule</h3>
-          {expandedSections.operating ? (
-            <ChevronUp className="w-5 h-5 text-text-muted" />
-          ) : (
-            <ChevronDown className="w-5 h-5 text-text-muted" />
-          )}
-        </button>
-        {expandedSections.operating && (
-          <div className="p-4 pt-0">
-            <OperatingScheduleSection
-              schedule={formSchedule.operatingSchedule}
-              onChange={handleOperatingScheduleChange}
-            />
-          </div>
-        )}
-      </div>
-
-      {/* Timeline Preview Section */}
-      <div className="bg-white rounded-lg border border-border">
-        <button
-          onClick={() => toggleSection('timeline')}
-          className="w-full flex items-center justify-between p-4 text-left hover:bg-surface-cream transition-colors"
-        >
-          <h3 className="text-sm font-semibold text-text-primary">Timeline Preview</h3>
-          {expandedSections.timeline ? (
-            <ChevronUp className="w-5 h-5 text-text-muted" />
-          ) : (
-            <ChevronDown className="w-5 h-5 text-text-muted" />
-          )}
-        </button>
-        {expandedSections.timeline && (
-          <div className="p-4 pt-0">
-            <TimelinePreview
-              schedule={formSchedule}
-              deliveryDay={previewDay}
-              onDeliveryDayChange={setPreviewDay}
-            />
-          </div>
-        )}
-      </div>
-
-      {/* Test Schedule Section */}
-      <div className="bg-white rounded-lg border border-border">
-        <button
-          onClick={() => toggleSection('testSchedule')}
-          className="w-full flex items-center justify-between p-4 text-left hover:bg-surface-cream transition-colors"
-        >
-          <h3 className="text-sm font-semibold text-text-primary">Test Schedule</h3>
-          {expandedSections.testSchedule ? (
-            <ChevronUp className="w-5 h-5 text-text-muted" />
-          ) : (
-            <ChevronDown className="w-5 h-5 text-text-muted" />
-          )}
-        </button>
-        {expandedSections.testSchedule && (
-          <div className="p-4 pt-0">
-            <BookingSimulator schedule={formSchedule} />
-          </div>
-        )}
-      </div>
         </>
       )}
 
       {/* Client Overrides Tab */}
-      {activeTab === 'clients' && !formSchedule.isOverride && (
+      {activeTab === 'clients' && !isOverrideMode && (
         <div className="bg-white rounded-lg border border-border min-h-[400px]">
-          <ClientOverridesTab
-            baseSchedule={formSchedule}
-            allSchedules={allSchedules}
-            onSaveOverride={onSave}
-          />
+          <ClientOverridesTab baseSchedule={formSchedule} allSchedules={allSchedules} onSaveOverride={onSave} />
         </div>
       )}
 
-      {/* Action Buttons */}
+      {/* Action Buttons — SHOULD-FIX 14: dirty state indicator */}
       <div className="flex items-center justify-end gap-3 p-4 bg-surface-cream rounded-lg border border-border">
-        <Button variant="secondary" onClick={onCancel}>
-          Cancel
-        </Button>
-        <Button variant="primary" onClick={handleSave}>
-          {isNew ? 'Create Schedule' : 'Save Changes'}
-        </Button>
+        {isDirty && (
+          <span className="text-sm text-orange-600 font-medium mr-auto">● Unsaved changes</span>
+        )}
+        <Button variant="secondary" onClick={onCancel}>Cancel</Button>
+        <Button variant="primary" onClick={handleSave}>{saveButtonText}</Button>
       </div>
-
-      {/* Leg Config Panel (Side Panel) */}
-      {selectedLeg && (
-        <LegConfigPanel leg={selectedLeg} onUpdate={handleLegUpdate} onClose={() => setSelectedLegId(null)} />
-      )}
     </div>
   );
 }

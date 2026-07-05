@@ -17,6 +17,7 @@ interface ClientReference {
   shortName?: string;
 }
 
+/** Props for the SideBySideOverrideEditor component. */
 interface SideBySideOverrideEditorProps {
   baseSchedule: Schedule;
   clientId: string;
@@ -26,6 +27,7 @@ interface SideBySideOverrideEditorProps {
   onCancel: () => void;
 }
 
+/** Side-by-side comparison editor for base vs client override schedule settings. */
 export function SideBySideOverrideEditor({
   baseSchedule,
   clientId,
@@ -42,7 +44,7 @@ export function SideBySideOverrideEditor({
     // Create new override from base
     return {
       ...baseSchedule,
-      id: `override-${Date.now()}`,
+      id: Date.now(),
       name: `${baseSchedule.name} (${client.shortName || client.name})`,
       isOverride: true,
       baseScheduleId: baseSchedule.id,
@@ -72,12 +74,10 @@ export function SideBySideOverrideEditor({
     } else {
       setFormSchedule({
         ...baseSchedule,
-        id: `override-${Date.now()}`,
+        id: Date.now(),
         name: `${baseSchedule.name} (${client.shortName || client.name})`,
         isOverride: true,
-        baseScheduleId: baseSchedule.id,
         overriddenFields: [],
-        clientVisibility: 'specific',
         clientIds: [clientId],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -103,7 +103,7 @@ export function SideBySideOverrideEditor({
   };
 
   const handleSpeedChange = (
-    field: 'defaultDeliverySpeedId' | 'defaultPickupSpeedId' | 'defaultLinehaulSpeedId',
+    field: 'speedId' | 'pickupRatingSpeed' | 'parentSpeedId',
     value: string
   ) => {
     setFormSchedule((prev) => ({ ...prev, [field]: value || undefined }));
@@ -121,16 +121,15 @@ export function SideBySideOverrideEditor({
     if (formSchedule.description !== baseSchedule.description) overriddenFields.push('description');
     if (formSchedule.isActive !== baseSchedule.isActive) overriddenFields.push('isActive');
     if (formSchedule.bookingMode !== baseSchedule.bookingMode) overriddenFields.push('bookingMode');
-    if (formSchedule.defaultDeliverySpeedId !== baseSchedule.defaultDeliverySpeedId) overriddenFields.push('defaultDeliverySpeedId');
-    if (formSchedule.defaultPickupSpeedId !== baseSchedule.defaultPickupSpeedId) overriddenFields.push('defaultPickupSpeedId');
-    if (formSchedule.defaultLinehaulSpeedId !== baseSchedule.defaultLinehaulSpeedId) overriddenFields.push('defaultLinehaulSpeedId');
+    if (formSchedule.speedId !== baseSchedule.speedId) overriddenFields.push('speedId');
+    if (formSchedule.pickupRatingSpeed !== baseSchedule.pickupRatingSpeed) overriddenFields.push('pickupRatingSpeed');
+    if (formSchedule.parentSpeedId !== baseSchedule.parentSpeedId) overriddenFields.push('parentSpeedId');
     if (JSON.stringify(formSchedule.operatingSchedule) !== JSON.stringify(baseSchedule.operatingSchedule)) {
       overriddenFields.push('operatingSchedule');
     }
 
     onSave({
       ...formSchedule,
-      overriddenFields,
       updatedAt: new Date().toISOString(),
     });
   };
@@ -140,14 +139,14 @@ export function SideBySideOverrideEditor({
     formSchedule.description !== baseSchedule.description ||
     formSchedule.isActive !== baseSchedule.isActive ||
     formSchedule.bookingMode !== baseSchedule.bookingMode ||
-    formSchedule.defaultDeliverySpeedId !== baseSchedule.defaultDeliverySpeedId ||
-    formSchedule.defaultPickupSpeedId !== baseSchedule.defaultPickupSpeedId ||
-    formSchedule.defaultLinehaulSpeedId !== baseSchedule.defaultLinehaulSpeedId ||
+    formSchedule.speedId !== baseSchedule.speedId ||
+    formSchedule.pickupRatingSpeed !== baseSchedule.pickupRatingSpeed ||
+    formSchedule.parentSpeedId !== baseSchedule.parentSpeedId ||
     JSON.stringify(formSchedule.operatingSchedule) !== JSON.stringify(baseSchedule.operatingSchedule)
   );
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full" data-testid="side-by-side-override-editor" aria-label="side by side override editor">
       {/* Header */}
       <div className="p-4 border-b border-border bg-brand-purple/5">
         <div className="flex items-center gap-2">
@@ -258,11 +257,11 @@ export function SideBySideOverrideEditor({
                 options={BOOKING_MODES.map((m) => ({ value: m.value, label: m.label }))}
               />
 
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Select
                   label="Delivery Speed"
-                  value={formSchedule.defaultDeliverySpeedId || ''}
-                  onChange={(e) => handleSpeedChange('defaultDeliverySpeedId', e.target.value)}
+                  value={formSchedule.speedId || ''}
+                  onChange={(e) => handleSpeedChange('speedId', e.target.value)}
                   options={[
                     { value: '', label: 'None' },
                     ...sampleSpeeds.map((s) => ({ value: s.id, label: s.name })),
@@ -270,8 +269,8 @@ export function SideBySideOverrideEditor({
                 />
                 <Select
                   label="Pickup Speed"
-                  value={formSchedule.defaultPickupSpeedId || ''}
-                  onChange={(e) => handleSpeedChange('defaultPickupSpeedId', e.target.value)}
+                  value={formSchedule.pickupRatingSpeed || ''}
+                  onChange={(e) => handleSpeedChange('pickupRatingSpeed', e.target.value)}
                   options={[
                     { value: '', label: 'None' },
                     ...sampleSpeeds.map((s) => ({ value: s.id, label: s.name })),
@@ -279,8 +278,8 @@ export function SideBySideOverrideEditor({
                 />
                 <Select
                   label="Linehaul Speed"
-                  value={formSchedule.defaultLinehaulSpeedId || ''}
-                  onChange={(e) => handleSpeedChange('defaultLinehaulSpeedId', e.target.value)}
+                  value={formSchedule.parentSpeedId || ''}
+                  onChange={(e) => handleSpeedChange('parentSpeedId', e.target.value)}
                   options={[
                     { value: '', label: 'None' },
                     ...sampleSpeeds.map((s) => ({ value: s.id, label: s.name })),

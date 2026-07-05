@@ -1,5 +1,19 @@
-// src/modules/schedules/types.ts
-// Schedules Module Types - Complete type definitions for the schedule configuration system
+/**
+ * @module schedules/types
+ *
+ * Domain types for the Schedules module — schedule definitions, legs, operating
+ * schedules, booking modes, cutoff rules, client overrides, and table view helpers.
+ *
+ * ## Production Model (tblBulkRunSchedule)
+ * Production stores **one row per day-of-week per schedule-name**. A "schedule"
+ * is a group of rows sharing the same `Name`. Each row has its own start/end
+ * times, zones, linehauls, and cutoff.
+ *
+ * This file contains:
+ * 1. Production-aligned types (BulkRunScheduleRow, etc.)
+ * 2. UI types (Schedule — our multi-day abstraction)
+ * 3. Mapping layer (multiDayToPerDay / perDayToMultiDay)
+ */
 
 import type { EntityConnections } from '../territory/types';
 import { createEmptyConnections } from '../territory/types';
@@ -14,6 +28,23 @@ export { createEmptyConnections };
 export type BookingMode = 'fixed_time' | 'window';
 
 export type LegType = 'collection' | 'depot' | 'linehaul' | 'delivery';
+
+export type ScheduleOriginType = 'unselected' | 'client_address' | 'depot' | 'booking';
+
+export type AdditionalItemChargingLogic =
+  | 'none'
+  | 'speed_second_box_discount'
+  | 'client_speed_addon_percentage'
+  | 'client_additional_charges'
+  | 'rate_special_additional_charge';
+
+export const ADDITIONAL_ITEM_CHARGING_OPTIONS: { value: AdditionalItemChargingLogic; label: string }[] = [
+  { value: 'none', label: 'No additional item charge' },
+  { value: 'speed_second_box_discount', label: 'Speed Second Box %' },
+  { value: 'client_speed_addon_percentage', label: 'Client Speed Addon %' },
+  { value: 'client_additional_charges', label: 'Client Additional Charges' },
+  { value: 'rate_special_additional_charge', label: 'Rate Special Additional Charge' },
+];
 
 export type DayOfWeek = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun';
 
@@ -31,6 +62,16 @@ export const DAYS_OF_WEEK: { value: DayOfWeek; label: string; short: string }[] 
   { value: 'sun', label: 'Sunday', short: 'Sun' },
 ];
 
+/** Maps DayOfWeek string to production numeric (1=Mon..7=Sun) */
+export const DAY_TO_NUMBER: Record<DayOfWeek, number> = {
+  mon: 1, tue: 2, wed: 3, thu: 4, fri: 5, sat: 6, sun: 7,
+};
+
+/** Maps production numeric (1-7) to DayOfWeek string */
+export const NUMBER_TO_DAY: Record<number, DayOfWeek> = {
+  1: 'mon', 2: 'tue', 3: 'wed', 4: 'thu', 5: 'fri', 6: 'sat', 7: 'sun',
+};
+
 export const TEMPERATURE_STATES: { value: TemperatureState; label: string }[] = [
   { value: 'ambient', label: 'Ambient' },
   { value: 'chilled', label: 'Chilled' },
@@ -43,40 +84,141 @@ export const BOOKING_MODES: { value: BookingMode; label: string; description: st
 ];
 
 // ============================================
+// PRODUCTION TYPES (tblBulkRunSchedule row)
+// ============================================
+
+/**
+ * Represents a single row in tblBulkRunSchedule.
+ * Production stores one row per day-of-week per schedule name.
+ */
+export interface BulkRunScheduleRow {
+  bulkRunScheduleId: number;
+  name: string;
+  description?: string;
+  dayOfWeek: number; // 1=Mon..7=Sun
+  startTime: string; // HH:MM
+  endTime: string; // HH:MM
+  maxJobs: number; // typically 10000
+  region: number; // FK → BulkRegion (destination depot)
+  speedId?: number; // FK → delivery speed
+  parentSpeedId?: number; // FK → linehaul speed
+  pickupRatingSpeed?: number; // FK → pickup speed
+  cutoffHours: number;
+  autoBook?: boolean;
+  bookPickup?: boolean;
+  pickupDepotId?: number; // FK
+  postcodeGroupId?: number; // FK → delivery zone group
+  pickupPostcodeGroupId?: number; // FK → pickup zone group
+  storageState?: number;
+  deliveryState?: number;
+  pickupBoxDiscount?: number;
+  dropOffLocationId?: number; // FK
+  applyPickupCutoff?: boolean;
+  pickupCutoff?: number;
+  clientId?: number; // null = default/all, non-null = client-specific
+}
+
+/**
+ * Linehaul row associated with a BulkRunSchedule row.
+ */
+export interface BulkScheduleLinehaulRow {
+  bulkScheduleLinehaulId: number;
+  bulkRunScheduleId: number; // parent FK
+  linehaulRunId?: number;
+  fromDepotId?: number;
+  toDepotId?: number;
+  departureAdvanceDays: number;
+  weekDay: string; // "1111111" encoding (Mon-Sun, 1=active)
+  minutes: number; // transit time
+  insertToBulk: boolean;
+  fromClientAddress?: boolean;
+  dropOffLocationId?: number;
+  amount?: number;
+  amountPercentage?: number;
+  applyDiscount?: boolean;
+  applyAddOnPercentage?: boolean;
+}
+
+/**
+ * Zone association for a schedule row.
+ */
+export interface BulkZoneScheduleRow {
+  bulkZoneScheduleId: number;
+  bulkRunScheduleId: number;
+  zoneId: number;
+}
+
+// ============================================
+// PRODUCTION API DTOs
+// ============================================
+
+export interface BulkRunScheduleCreateRequest {
+  name: string;
+  description?: string;
+  dayOfWeek: number;
+  startTime: string;
+  endTime: string;
+  maxJobs?: number;
+  region: number;
+  speedId?: number;
+  parentSpeedId?: number;
+  pickupRatingSpeed?: number;
+  cutoffHours: number;
+  autoBook?: boolean;
+  bookPickup?: boolean;
+  pickupDepotId?: number;
+  postcodeGroupId?: number;
+  pickupPostcodeGroupId?: number;
+  storageState?: number;
+  deliveryState?: number;
+  pickupBoxDiscount?: number;
+  dropOffLocationId?: number;
+  applyPickupCutoff?: boolean;
+  pickupCutoff?: number;
+  clientId?: number;
+  zones?: { zoneId: number }[];
+  linehauls?: Omit<BulkScheduleLinehaulRow, 'bulkScheduleLinehaulId' | 'bulkRunScheduleId'>[];
+}
+
+export interface BulkRunScheduleUpdateRequest extends BulkRunScheduleCreateRequest {
+  bulkRunScheduleId: number;
+}
+
+// ============================================
 // REFERENCE TYPES (from other modules)
 // ============================================
 
 export interface DepotReference {
-  id: string;
+  id: number;
   name: string;
   code?: string;
 }
 
 export interface DropoffLocation {
-  id: string;
-  depotId: string;
+  id: number;
+  depotId: number;
   name: string;
   qrCode?: string;
 }
 
 export interface ZoneReference {
-  id: string;
+  id: number;
   name: string;
   code?: string;
   postcodeCount?: number;
 }
 
 export interface SpeedReference {
-  id: string;
+  id: number;
   name: string;
   code: string;
 }
 
 export interface LinehaulRunReference {
-  id: string;
+  id: number;
   name: string;
-  originDepotId: string;
-  destinationDepotId: string;
+  originDepotId: number;
+  destinationDepotId: number;
   departureTime: string; // HH:MM
   transitDuration: number;
   transitUnit: TimeUnit;
@@ -84,12 +226,12 @@ export interface LinehaulRunReference {
 }
 
 export interface RateCardReference {
-  id: string;
+  id: number;
   name: string;
 }
 
 export interface ClientReference {
-  id: string;
+  id: number;
   name: string;
   shortName?: string;
 }
@@ -100,37 +242,52 @@ export interface ClientReference {
 
 export interface CollectionLegConfig {
   type: 'collection';
-  speedId?: string;
-  pickupZoneIds: string[];
-  pickupMinutesBefore: number; // Minutes before linehaul/delivery
+  speedId?: number;
+  additionalItemChargingLogic?: AdditionalItemChargingLogic;
+  pickupZoneIds: number[];
+  pickupTimeMode: 'window' | 'fixed';
+  pickupWindowStart?: string; // HH:MM e.g. "14:00"
+  pickupWindowEnd?: string;   // HH:MM e.g. "15:00"
   bookFromClientAddress: boolean;
   createPickupJob: boolean;
+  lockedCollectionTime?: string; // HH:MM format, used for fixed mode
+  pickupSource: 'client_address' | 'depot' | 'booking';
+  pickupDepotId?: number;
 }
 
 export interface DepotLegConfig {
   type: 'depot';
-  depotId: string;
-  dropoffLocationId?: string;
+  depotId: number;
+  dropoffLocationId?: number;
   storageState?: TemperatureState;
 }
 
 export interface LinehaulLegConfig {
   type: 'linehaul';
-  runId?: string; // Reference to predefined linehaul run
-  speedId?: string;
-  dayOffset: number; // Days before delivery
+  speedId?: number;
+  additionalItemChargingLogic?: AdditionalItemChargingLogic;
+  runId?: number;
+  fromDepotId?: number;
+  toDepotId?: number;
+  dayOffset: number;
   activeDays: DayOfWeek[];
-  transitMinutes: number; // For tracking progress display
-  insertToBulk: boolean; // Route builder vs live dispatch
-  rateCardId?: string;
+  transitMinutes: number;
+  insertToBulk: boolean;
+  fromClientAddress?: boolean;
+  dropOffLocationId?: number;
+  amount?: number;
+  amountPercentage?: number;
+  applyDiscount?: boolean;
+  applyAddOnPercentage?: boolean;
 }
 
 export interface DeliveryLegConfig {
   type: 'delivery';
-  speedId?: string;
-  deliveryZoneIds: string[];
+  speedId?: number;
+  additionalItemChargingLogic?: AdditionalItemChargingLogic;
+  deliveryZoneIds: number[];
   deliveryState?: TemperatureState;
-  rateCardId?: string;
+  courierId?: number; // Temp — until auto-dispatch engine. FK → Courier
 }
 
 export type LegConfig = CollectionLegConfig | DepotLegConfig | LinehaulLegConfig | DeliveryLegConfig;
@@ -140,7 +297,7 @@ export type LegConfig = CollectionLegConfig | DepotLegConfig | LinehaulLegConfig
 // ============================================
 
 export interface ScheduleLeg {
-  id: string;
+  id: number;
   order: number;
   config: LegConfig;
 }
@@ -155,74 +312,58 @@ export interface DaySchedule {
   endTime: string; // HH:MM
 }
 
-// Cutoff exception for specific delivery days (e.g., Mon delivery needs Fri cutoff)
 export interface CutoffException {
-  deliveryDay: DayOfWeek;  // Which delivery day this exception applies to
-  cutoffDay: DayOfWeek;    // When the cutoff occurs (e.g., Friday)
-  cutoffTime: string;      // HH:MM format (e.g., "17:00")
+  deliveryDay: DayOfWeek;
+  cutoffDay: DayOfWeek;
+  cutoffTime: string; // HH:MM
 }
 
 export interface OperatingSchedule {
-  // If true, all weekdays use the same schedule
   uniformWeekdays: boolean;
-  // Per-day configuration
   days: Record<DayOfWeek, DaySchedule>;
-  // Default cutoff configuration (applies to days without exceptions)
   cutoffValue: number;
   cutoffUnit: TimeUnit;
-  // Day-specific cutoff exceptions (e.g., Mon delivery → Fri 5pm cutoff)
   cutoffExceptions?: CutoffException[];
 }
 
 // Helper: Calculate days between two DayOfWeek values
 export function getDaysBetween(cutoffDay: DayOfWeek, deliveryDay: DayOfWeek): number {
-  const dayOrder: Record<DayOfWeek, number> = {
-    mon: 0, tue: 1, wed: 2, thu: 3, fri: 4, sat: 5, sun: 6
-  };
-  const from = dayOrder[cutoffDay];
-  const to = dayOrder[deliveryDay];
+  const from = DAY_TO_NUMBER[cutoffDay] - 1;
+  const to = DAY_TO_NUMBER[deliveryDay] - 1;
   let diff = to - from;
   if (diff <= 0) diff += 7;
   return diff;
 }
 
-// Helper: Get suggested cutoff day for a delivery day (skip weekends)
 export function getSuggestedCutoffDay(deliveryDay: DayOfWeek): DayOfWeek {
   const suggestions: Record<DayOfWeek, DayOfWeek> = {
-    mon: 'fri',  // Skip weekend
-    tue: 'mon',
-    wed: 'tue',
-    thu: 'wed',
-    fri: 'thu',
-    sat: 'fri',
-    sun: 'fri',  // Skip Saturday
+    mon: 'fri', tue: 'mon', wed: 'tue', thu: 'wed',
+    fri: 'thu', sat: 'fri', sun: 'fri',
   };
   return suggestions[deliveryDay];
 }
 
 // ============================================
-// DELIVERY WINDOW RULES
+// DELIVERY WINDOW RULES (frontend-only)
 // ============================================
 
 export type DeliveryWindowMode = 'automatic' | 'fixed';
 
 export interface DeliveryWindowRule {
-  id: string;
+  id: number;
   condition: {
-    arrivalBefore: string; // HH:MM - "If final depot arrival is before X"
+    arrivalBefore: string;
   };
   result: {
-    deliverSameDay: boolean; // true = same day, false = next business day
-    windowStart: string; // HH:MM
-    windowEnd: string; // HH:MM
+    deliverSameDay: boolean;
+    windowStart: string;
+    windowEnd: string;
   };
 }
 
 export interface DeliveryWindowConfig {
   mode: DeliveryWindowMode;
-  // For 'automatic' mode
   rules: DeliveryWindowRule[];
-  // For 'fixed' mode
   fixedDays: DayOfWeek[];
   fixedWindowStart: string;
   fixedWindowEnd: string;
@@ -230,71 +371,392 @@ export interface DeliveryWindowConfig {
 }
 
 // ============================================
-// MAIN SCHEDULE INTERFACE
+// MAIN SCHEDULE INTERFACE (UI abstraction)
 // ============================================
 
+/**
+ * UI-level schedule — multi-day abstraction over production's per-day rows.
+ * Use multiDayToPerDay() / perDayToMultiDay() to convert.
+ *
+ * Key differences from production:
+ * - `id` is the first row's BulkRunScheduleId (or synthetic for new)
+ * - `rowIds` tracks all production row IDs belonging to this schedule
+ * - `clientId` is singular (production is 1 client per schedule set)
+ * - bookingMode, deliveryWindow, connections are frontend-only
+ */
 export interface Schedule {
-  id: string;
+  id: number;
+  /** All production row IDs grouped under this schedule name */
+  rowIds: number[];
   name: string;
   description?: string;
+  /** UI-only customer-facing name for a client override. Not mapped to production schedule name. */
+  displayName?: string;
+  /** UI-only customer-facing description for a client override. Not mapped to production schedule description. */
+  displayDescription?: string;
 
-  // Client visibility
-  clientVisibility: 'all' | 'specific';
-  clientIds: string[]; // Only used if clientVisibility === 'specific'
+  // Client — production supports ONE client per schedule set
+  clientId: number | null; // null = default/all clients
 
-  // Booking mode
+  // Booking mode (frontend-only — no production equivalent)
   bookingMode: BookingMode;
 
-  // Speed defaults
-  defaultDeliverySpeedId?: string;
-  defaultPickupSpeedId?: string;
-  defaultLinehaulSpeedId?: string;
+  // Speed IDs (production field names in comments)
+  speedId?: number; // SpeedId — delivery speed
+  pickupRatingSpeed?: number; // PickupRatingSpeed
+  parentSpeedId?: number; // ParentSpeedId — linehaul speed
 
   // Origin configuration
-  originType: 'depot' | 'client_address';
-  originDepotId?: string; // Used if originType === 'depot'
-  fallbackDepotId?: string; // Optional fallback if originType === 'client_address'
+  originType: ScheduleOriginType;
+  pickupDepotId?: number;
+  originDepotId?: number; // Alias for pickupDepotId for some components
+  additionalItemChargingLogic?: AdditionalItemChargingLogic;
 
-  // The leg chain
+  // Destination
+  region: number; // FK → BulkRegion (destination depot)
+
+  // Production fields
+  cutoffHours: number;
+  autoBook?: boolean;
+  bookPickup?: boolean;
+  postcodeGroupId?: number;
+  pickupPostcodeGroupId?: number;
+  storageState?: number;
+  deliveryState?: number;
+  pickupBoxDiscount?: number;
+  dropOffLocationId?: number;
+  applyPickupCutoff?: boolean;
+  pickupCutoff?: number;
+
+  // The leg chain (UI abstraction)
   legs: ScheduleLeg[];
 
-  // Operating schedule
+  // Operating schedule (mapped from/to per-day rows)
   operatingSchedule: OperatingSchedule;
 
-  // Delivery window configuration
+  // Delivery window configuration (frontend-only)
   deliveryWindow: DeliveryWindowConfig;
 
-  // Status
+  // Status (frontend-only or derived from autoBook)
   isActive: boolean;
 
-  // Override info (for client-specific schedules)
+  // Override info — derived from clientId presence
   isOverride: boolean;
-  baseScheduleId?: string; // Parent schedule if this is an override
-  overriddenFields: string[]; // Which fields differ from base
+  baseScheduleId?: number; // For overrides: ID of base schedule
+  baseScheduleName?: string; // Linked by Name matching
+  clientVisibility?: string; // For overrides: visibility setting
+  clientIds?: string[]; // For overrides: array of client IDs (legacy, use clientId)
+  overriddenFields?: string[]; // For overrides: which fields are overridden
 
-  // Connections (for tag system)
+  // Connections (frontend-only tag system)
   connections: EntityConnections;
 
-  // Metadata
-  createdAt: string;
-  updatedAt: string;
-  createdBy?: string;
-  updatedBy?: string;
+  // Metadata (frontend-only — no audit fields in ClientManager)
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 // ============================================
-// SCHEDULE GROUP (Optional feature)
+// MAPPING LAYER: Multi-day ↔ Per-day rows
+// ============================================
+
+/**
+ * Encode DayOfWeek[] into production "1111111" string (Mon-Sun).
+ */
+export function encodeDaysToWeekDay(days: DayOfWeek[]): string {
+  return (['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as DayOfWeek[])
+    .map(d => days.includes(d) ? '1' : '0')
+    .join('');
+}
+
+/**
+ * Decode production "1111111" string to DayOfWeek[].
+ */
+export function decodeWeekDayToDays(weekDay: string): DayOfWeek[] {
+  const allDays: DayOfWeek[] = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+  return allDays.filter((_, i) => weekDay[i] === '1');
+}
+
+/**
+ * Convert a UI Schedule (multi-day) into production per-day rows for save.
+ */
+export function multiDayToPerDay(schedule: Schedule): BulkRunScheduleCreateRequest[] {
+  const enabledDays = DAYS_OF_WEEK.filter(d => schedule.operatingSchedule.days[d.value].enabled);
+
+  return enabledDays.map(day => {
+    const dayConfig = schedule.operatingSchedule.days[day.value];
+    const collectionLeg = schedule.legs.find(l => l.config.type === 'collection');
+    const linehaulLeg = schedule.legs.find(l => l.config.type === 'linehaul');
+    const deliveryLeg = schedule.legs.find(l => l.config.type === 'delivery');
+    const collectionConfig = collectionLeg?.config.type === 'collection' ? collectionLeg.config : undefined;
+    const linehaulConfig = linehaulLeg?.config.type === 'linehaul' ? linehaulLeg.config : undefined;
+    const deliveryConfig = deliveryLeg?.config.type === 'delivery' ? deliveryLeg.config : undefined;
+
+    // Map linehaul legs
+    const linehauls = schedule.legs
+      .filter(l => l.config.type === 'linehaul')
+      .map(l => {
+        const cfg = l.config as LinehaulLegConfig;
+        return {
+          linehaulRunId: cfg.runId,
+          fromDepotId: cfg.fromDepotId,
+          toDepotId: cfg.toDepotId,
+          departureAdvanceDays: cfg.dayOffset,
+          weekDay: encodeDaysToWeekDay(cfg.activeDays),
+          minutes: cfg.transitMinutes,
+          insertToBulk: cfg.insertToBulk,
+          fromClientAddress: cfg.fromClientAddress,
+          dropOffLocationId: cfg.dropOffLocationId,
+          amount: cfg.amount,
+          amountPercentage: cfg.amountPercentage,
+          applyDiscount: cfg.applyDiscount,
+          applyAddOnPercentage: cfg.applyAddOnPercentage,
+        };
+      });
+
+    // Map delivery zone IDs
+    const zones = deliveryConfig
+      ? deliveryConfig.deliveryZoneIds.map(zoneId => ({ zoneId }))
+      : [];
+
+    const row: BulkRunScheduleCreateRequest = {
+      name: schedule.name,
+      description: schedule.description,
+      dayOfWeek: DAY_TO_NUMBER[day.value],
+      startTime: dayConfig.startTime,
+      endTime: dayConfig.endTime,
+      maxJobs: 10000,
+      region: schedule.region,
+      speedId: deliveryConfig?.speedId ?? schedule.speedId,
+      parentSpeedId: linehaulConfig?.speedId ?? schedule.parentSpeedId,
+      pickupRatingSpeed: collectionConfig?.speedId ?? schedule.pickupRatingSpeed,
+      cutoffHours: schedule.cutoffHours,
+      autoBook: schedule.autoBook,
+      bookPickup: schedule.bookPickup,
+      pickupDepotId: schedule.pickupDepotId,
+      postcodeGroupId: schedule.postcodeGroupId,
+      pickupPostcodeGroupId: schedule.pickupPostcodeGroupId,
+      storageState: schedule.storageState,
+      deliveryState: schedule.deliveryState,
+      pickupBoxDiscount: schedule.pickupBoxDiscount,
+      dropOffLocationId: schedule.dropOffLocationId,
+      applyPickupCutoff: schedule.applyPickupCutoff,
+      pickupCutoff: schedule.pickupCutoff,
+      clientId: schedule.clientId ?? undefined,
+      zones,
+      linehauls: linehauls.length > 0 ? linehauls : undefined,
+    };
+
+    return row;
+  });
+}
+
+/**
+ * Convert production per-day rows (grouped by Name) into a UI Schedule.
+ */
+export function perDayToMultiDay(
+  rows: BulkRunScheduleRow[],
+  linehauls: BulkScheduleLinehaulRow[] = [],
+  zones: BulkZoneScheduleRow[] = [],
+): Schedule {
+  if (rows.length === 0) {
+    throw new Error('Cannot convert empty row set to Schedule');
+  }
+
+  // Use first row as canonical source for shared fields
+  const first = rows[0];
+
+  // Build operating schedule from rows
+  const days: Record<DayOfWeek, DaySchedule> = {
+    mon: { enabled: false, startTime: '09:00', endTime: '17:00' },
+    tue: { enabled: false, startTime: '09:00', endTime: '17:00' },
+    wed: { enabled: false, startTime: '09:00', endTime: '17:00' },
+    thu: { enabled: false, startTime: '09:00', endTime: '17:00' },
+    fri: { enabled: false, startTime: '09:00', endTime: '17:00' },
+    sat: { enabled: false, startTime: '09:00', endTime: '17:00' },
+    sun: { enabled: false, startTime: '09:00', endTime: '17:00' },
+  };
+
+  const rowIds: number[] = [];
+  for (const row of rows) {
+    const dayKey = NUMBER_TO_DAY[row.dayOfWeek];
+    if (dayKey) {
+      days[dayKey] = {
+        enabled: true,
+        startTime: row.startTime,
+        endTime: row.endTime,
+      };
+    }
+    rowIds.push(row.bulkRunScheduleId);
+  }
+
+  // Check if all enabled days have same times
+  const enabledDayConfigs = Object.values(days).filter(d => d.enabled);
+  const uniformWeekdays = enabledDayConfigs.length <= 1 || enabledDayConfigs.every(
+    d => d.startTime === enabledDayConfigs[0].startTime && d.endTime === enabledDayConfigs[0].endTime
+  );
+
+  // Build legs from production data
+  const legs: ScheduleLeg[] = [];
+  let legOrder = 0;
+  const hasValue = (value: unknown): boolean => value !== undefined && value !== null;
+
+  // Collection leg (if bookPickup is set)
+  if (first.bookPickup) {
+    const pickupZoneIds = zones
+      .filter(z => z.bulkRunScheduleId === first.bulkRunScheduleId)
+      .map(z => z.zoneId);
+
+    legs.push({
+      id: -(legOrder + 1), // negative = synthetic
+      order: legOrder++,
+      config: {
+        type: 'collection',
+        speedId: first.pickupRatingSpeed,
+        additionalItemChargingLogic: first.pickupBoxDiscount ? 'speed_second_box_discount' : 'none',
+        pickupZoneIds: first.pickupPostcodeGroupId ? [first.pickupPostcodeGroupId] : pickupZoneIds,
+        pickupTimeMode: 'window',
+        pickupWindowStart: '14:00',
+        pickupWindowEnd: '15:00',
+        bookFromClientAddress: false,
+        createPickupJob: true,
+        pickupSource: "client_address",
+      },
+    });
+  }
+
+  // Linehaul legs (from first row's linehauls)
+  const firstRowLinehauls = linehauls.filter(lh => lh.bulkRunScheduleId === first.bulkRunScheduleId);
+  for (const lh of firstRowLinehauls) {
+    legs.push({
+      id: lh.bulkScheduleLinehaulId,
+      order: legOrder++,
+      config: {
+        type: 'linehaul',
+        speedId: first.parentSpeedId,
+        additionalItemChargingLogic: lh.applyDiscount
+          ? 'speed_second_box_discount'
+          : lh.applyAddOnPercentage
+            ? 'client_speed_addon_percentage'
+            : lh.amount || lh.amountPercentage
+              ? 'rate_special_additional_charge'
+              : 'none',
+        runId: lh.linehaulRunId,
+        fromDepotId: lh.fromDepotId,
+        toDepotId: lh.toDepotId,
+        dayOffset: lh.departureAdvanceDays,
+        activeDays: decodeWeekDayToDays(lh.weekDay),
+        transitMinutes: lh.minutes,
+        insertToBulk: lh.insertToBulk,
+        fromClientAddress: lh.fromClientAddress,
+        dropOffLocationId: lh.dropOffLocationId,
+        amount: lh.amount,
+        amountPercentage: lh.amountPercentage,
+        applyDiscount: lh.applyDiscount,
+        applyAddOnPercentage: lh.applyAddOnPercentage,
+      },
+    });
+  }
+
+  const hasDeliveryData = hasValue(first.speedId)
+    || hasValue(first.postcodeGroupId)
+    || hasValue(first.deliveryState);
+
+  // Depot leg: visual surface for existing depot storage/dropoff fields when no delivery leg exists.
+  if (!hasDeliveryData && firstRowLinehauls.length === 0) {
+    legs.push({
+      id: -(legOrder + 1),
+      order: legOrder++,
+      config: {
+        type: 'depot',
+        depotId: first.pickupDepotId ?? first.region,
+        dropoffLocationId: first.dropOffLocationId,
+        storageState: first.storageState as unknown as TemperatureState,
+      },
+    });
+  }
+
+  // Delivery leg (only when production data contains a real delivery component)
+  const deliveryZoneIds = first.postcodeGroupId ? [first.postcodeGroupId] : [];
+  if (hasDeliveryData) {
+    legs.push({
+      id: -(legOrder + 1),
+      order: legOrder++,
+      config: {
+        type: 'delivery',
+        speedId: first.speedId,
+        additionalItemChargingLogic: first.pickupBoxDiscount ? 'speed_second_box_discount' : 'none',
+        deliveryZoneIds,
+        deliveryState: first.deliveryState as unknown as TemperatureState,
+      },
+    });
+  }
+
+  return {
+    id: first.bulkRunScheduleId,
+    rowIds,
+    name: first.name,
+    description: first.description,
+    clientId: first.clientId ?? null,
+    bookingMode: 'window', // frontend-only default
+    speedId: first.speedId,
+    pickupRatingSpeed: first.pickupRatingSpeed,
+    parentSpeedId: first.parentSpeedId,
+    originType: first.pickupDepotId ? 'depot' : 'client_address',
+    pickupDepotId: first.pickupDepotId,
+    region: first.region,
+    cutoffHours: first.cutoffHours,
+    autoBook: first.autoBook,
+    bookPickup: first.bookPickup,
+    postcodeGroupId: first.postcodeGroupId,
+    pickupPostcodeGroupId: first.pickupPostcodeGroupId,
+    storageState: first.storageState,
+    deliveryState: first.deliveryState,
+    pickupBoxDiscount: first.pickupBoxDiscount,
+    dropOffLocationId: first.dropOffLocationId,
+    applyPickupCutoff: first.applyPickupCutoff,
+    pickupCutoff: first.pickupCutoff,
+    legs,
+    operatingSchedule: {
+      uniformWeekdays,
+      days,
+      cutoffValue: first.cutoffHours,
+      cutoffUnit: 'hours',
+    },
+    deliveryWindow: createDefaultDeliveryWindow(),
+    isActive: first.autoBook ?? true,
+    isOverride: first.clientId != null,
+    baseScheduleName: first.clientId != null ? first.name : undefined,
+    connections: createEmptyConnections(),
+  };
+}
+
+/**
+ * Group flat production rows by Name into schedule sets.
+ */
+export function groupRowsByName(rows: BulkRunScheduleRow[]): Map<string, BulkRunScheduleRow[]> {
+  const map = new Map<string, BulkRunScheduleRow[]>();
+  for (const row of rows) {
+    const existing = map.get(row.name) ?? [];
+    existing.push(row);
+    map.set(row.name, existing);
+  }
+  return map;
+}
+
+// ============================================
+// SCHEDULE GROUP (frontend-only — no production equivalent)
 // ============================================
 
 export interface ScheduleGroup {
-  id: string;
+  id: number;
   name: string;
   description?: string;
-  scheduleIds: string[];
+  scheduleIds: number[];
   isActive: boolean;
   connections: EntityConnections;
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 // ============================================
@@ -305,9 +767,9 @@ export interface ScheduleFilterState {
   search: string;
   status: 'all' | 'active' | 'inactive';
   type: 'all' | 'base' | 'override';
-  clientId: string | 'all';
-  originDepotId: string | 'all';
-  destinationDepotId: string | 'all';
+  clientId: number | 'all';
+  originDepotId: number | 'all';
+  destinationDepotId: number | 'all';
 }
 
 // ============================================
@@ -367,28 +829,29 @@ export function countLegs(schedule: Schedule): number {
 export function getRouteDescription(schedule: Schedule, depots: DepotReference[]): string {
   const parts: string[] = [];
 
-  if (schedule.originType === 'client_address') {
-    parts.push('Client');
-  } else if (schedule.originDepotId) {
-    const depot = depots.find(d => d.id === schedule.originDepotId);
+  if (schedule.originType === 'booking') {
+    parts.push('Booking');
+  } else if (schedule.originType === 'client_address') {
+    parts.push('Customer');
+  } else if (schedule.pickupDepotId) {
+    const depot = depots.find(d => d.id === schedule.pickupDepotId);
     parts.push(depot?.code ?? depot?.name ?? 'Depot');
   }
 
-  // Add intermediate depots from legs
-  schedule.legs.forEach(leg => {
-    if (leg.config.type === 'depot') {
-      const depotConfig = leg.config as DepotLegConfig;
-      const depot = depots.find(d => d.id === depotConfig.depotId);
-      if (depot) {
-        parts.push(depot.code ?? depot.name);
-      }
+  schedule.legs.forEach(({ config }) => {
+    if (config.type === 'collection') {
+      parts.push('Collection');
+    } else if (config.type === 'depot') {
+      const depot = depots.find(d => d.id === config.depotId);
+      parts.push(depot?.code ?? depot?.name ?? 'Depot');
+    } else if (config.type === 'linehaul') {
+      parts.push('Linehaul');
+    } else if (config.type === 'delivery') {
+      parts.push('Delivery');
     }
   });
 
-  // Always ends at client for delivery
-  parts.push('Client');
-
-  return parts.join(' → ');
+  return parts.length > 0 ? parts.join(' → ') : 'No route';
 }
 
 export function getActiveDaysSummary(schedule: OperatingSchedule): string {
@@ -397,7 +860,6 @@ export function getActiveDaysSummary(schedule: OperatingSchedule): string {
   if (activeDays.length === 7) return 'Every day';
   if (activeDays.length === 0) return 'No days';
 
-  // Check for Mon-Fri
   const weekdays = ['mon', 'tue', 'wed', 'thu', 'fri'] as DayOfWeek[];
   const weekend = ['sat', 'sun'] as DayOfWeek[];
 
@@ -406,22 +868,12 @@ export function getActiveDaysSummary(schedule: OperatingSchedule): string {
 
   if (hasAllWeekdays && hasNoWeekend) return 'Mon–Fri';
 
-  // Otherwise list short names
   return activeDays.map(d => d.short).join(', ');
 }
 
 export function createDefaultOperatingSchedule(): OperatingSchedule {
-  const defaultDay: DaySchedule = {
-    enabled: true,
-    startTime: '09:00',
-    endTime: '17:00',
-  };
-
-  const weekendDay: DaySchedule = {
-    enabled: false,
-    startTime: '09:00',
-    endTime: '17:00',
-  };
+  const defaultDay: DaySchedule = { enabled: true, startTime: '09:00', endTime: '17:00' };
+  const weekendDay: DaySchedule = { enabled: false, startTime: '09:00', endTime: '17:00' };
 
   return {
     uniformWeekdays: true,
@@ -434,8 +886,8 @@ export function createDefaultOperatingSchedule(): OperatingSchedule {
       sat: { ...weekendDay },
       sun: { ...weekendDay },
     },
-    cutoffValue: 60,
-    cutoffUnit: 'minutes',
+    cutoffValue: 2,
+    cutoffUnit: 'hours',
   };
 }
 
@@ -444,12 +896,12 @@ export function createDefaultDeliveryWindow(): DeliveryWindowConfig {
     mode: 'automatic',
     rules: [
       {
-        id: 'rule-1',
+        id: 1,
         condition: { arrivalBefore: '10:00' },
         result: { deliverSameDay: true, windowStart: '12:00', windowEnd: '17:00' },
       },
       {
-        id: 'rule-2',
+        id: 2,
         condition: { arrivalBefore: '23:59' },
         result: { deliverSameDay: false, windowStart: '08:00', windowEnd: '12:00' },
       },
@@ -461,40 +913,32 @@ export function createDefaultDeliveryWindow(): DeliveryWindowConfig {
   };
 }
 
-export function createEmptySchedule(): Omit<Schedule, 'id' | 'createdAt' | 'updatedAt'> {
+export function createEmptySchedule(): Omit<Schedule, 'id' | 'rowIds'> {
   return {
     name: '',
     description: '',
-    clientVisibility: 'all',
-    clientIds: [],
+    clientId: null,
     bookingMode: 'window',
-    defaultDeliverySpeedId: undefined,
-    defaultPickupSpeedId: undefined,
-    defaultLinehaulSpeedId: undefined,
-    originType: 'depot',
-    originDepotId: undefined,
-    fallbackDepotId: undefined,
-    legs: [
-      {
-        id: 'leg-delivery-1',
-        order: 0,
-        config: {
-          type: 'delivery',
-          deliveryZoneIds: [],
-        },
-      },
-    ],
+    speedId: undefined,
+    pickupRatingSpeed: undefined,
+    parentSpeedId: undefined,
+    originType: 'unselected',
+    pickupDepotId: undefined,
+    additionalItemChargingLogic: 'none',
+    region: 0,
+    cutoffHours: 2,
+    autoBook: false,
+    bookPickup: false,
+    legs: [],
     operatingSchedule: createDefaultOperatingSchedule(),
     deliveryWindow: createDefaultDeliveryWindow(),
     isActive: true,
     isOverride: false,
-    baseScheduleId: undefined,
-    overriddenFields: [],
     connections: createEmptyConnections(),
   };
 }
 
-export function createEmptyScheduleGroup(): Omit<ScheduleGroup, 'id' | 'createdAt' | 'updatedAt'> {
+export function createEmptyScheduleGroup(): Omit<ScheduleGroup, 'id'> {
   return {
     name: '',
     description: '',
@@ -509,26 +953,21 @@ export function createEmptyScheduleGroup(): Omit<ScheduleGroup, 'id' | 'createdA
 // ============================================
 
 export const OVERRIDABLE_FIELDS: { field: string; label: string; category: string }[] = [
-  // Timing
   { field: 'operatingSchedule.cutoffValue', label: 'Booking Cutoff', category: 'Timing' },
   { field: 'operatingSchedule.days', label: 'Operating Days', category: 'Timing' },
-  { field: 'legs[0].config.pickupMinutesBefore', label: 'Pickup Time Offset', category: 'Timing' },
-  // Speeds
-  { field: 'defaultDeliverySpeedId', label: 'Delivery Speed', category: 'Speeds' },
-  { field: 'defaultPickupSpeedId', label: 'Pickup Speed', category: 'Speeds' },
-  { field: 'defaultLinehaulSpeedId', label: 'Linehaul Speed', category: 'Speeds' },
-  // Zones
-  { field: 'legs[0].config.pickupZoneIds', label: 'Pickup Zones', category: 'Zones' },
-  { field: 'legs[-1].config.deliveryZoneIds', label: 'Delivery Zones', category: 'Zones' },
-  // Pricing
-  { field: 'legs[-1].config.rateCardId', label: 'Rate Card', category: 'Pricing' },
+  { field: 'speedId', label: 'Delivery Speed', category: 'Speeds' },
+  { field: 'pickupRatingSpeed', label: 'Pickup Speed', category: 'Speeds' },
+  { field: 'parentSpeedId', label: 'Linehaul Speed', category: 'Speeds' },
+  { field: 'postcodeGroupId', label: 'Delivery Zone Group', category: 'Zones' },
+  { field: 'pickupPostcodeGroupId', label: 'Pickup Zone Group', category: 'Zones' },
 ];
 
 export const NON_OVERRIDABLE_FIELDS = [
-  'legs', // Route structure
+  'legs',
   'originType',
-  'originDepotId',
-  'deliveryWindow.mode', // Delivery rules are route-level
+  'pickupDepotId',
+  'region',
+  'deliveryWindow.mode',
 ];
 
 export function isFieldOverridable(field: string): boolean {
@@ -540,7 +979,7 @@ export function isFieldOverridable(field: string): boolean {
 // ============================================
 
 export interface ScheduleTableRow {
-  id: string;
+  id: number;
   name: string;
   route: string;
   legCount: number;
@@ -548,11 +987,10 @@ export interface ScheduleTableRow {
   clientDisplay: string;
   status: 'active' | 'inactive';
   isOverride: boolean;
-  baseScheduleId?: string;
+  baseScheduleName?: string;
   overrideCount: number;
   depth: number;
   schedule: Schedule;
-  // Additional columns for dense view
   originDepot: string;
   destDepot: string;
   hasLinehaul: boolean;
@@ -564,53 +1002,35 @@ export function scheduleToTableRow(
   depots: DepotReference[],
   clients: ClientReference[],
   speeds: SpeedReference[],
-  overrideCount: number = 0
+  overrideCount: number = 0,
 ): ScheduleTableRow {
   let clientDisplay = 'All';
-  if (schedule.clientVisibility === 'specific') {
-    if (schedule.clientIds.length === 1) {
-      const client = clients.find(c => c.id === schedule.clientIds[0]);
-      clientDisplay = client?.shortName || client?.name || 'Unknown';
-    } else if (schedule.clientIds.length <= 3) {
-      clientDisplay = schedule.clientIds
-        .map(id => {
-          const client = clients.find(c => c.id === id);
-          return client?.shortName || client?.name || '?';
-        })
-        .join(', ');
-    } else {
-      clientDisplay = `${schedule.clientIds.length} clients`;
-    }
+  if (schedule.clientId != null) {
+    const client = clients.find(c => c.id === schedule.clientId);
+    clientDisplay = client?.shortName || client?.name || 'Unknown';
   }
 
-  // Extract origin depot
   let originDepot = '—';
-  if (schedule.originDepotId) {
-    const depot = depots.find(d => d.id === schedule.originDepotId);
-    originDepot = depot?.code || depot?.name || schedule.originDepotId;
+  if (schedule.pickupDepotId) {
+    const depot = depots.find(d => d.id === schedule.pickupDepotId);
+    originDepot = depot?.code || depot?.name || String(schedule.pickupDepotId);
   } else if (schedule.originType === 'client_address') {
-    originDepot = 'Client';
+    originDepot = 'Customer';
+  } else if (schedule.originType === 'booking') {
+    originDepot = 'Booking';
   }
 
-  // Extract destination depot (last depot leg before delivery)
   let destDepot = '—';
-  const depotLegs = schedule.legs.filter(l => l.config.type === 'depot');
-  if (depotLegs.length > 0) {
-    const lastDepotLeg = depotLegs[depotLegs.length - 1];
-    if (lastDepotLeg.config.type === 'depot') {
-      const depotConfig = lastDepotLeg.config as DepotLegConfig;
-      const depot = depots.find(d => d.id === depotConfig.depotId);
-      destDepot = depot?.code || depot?.name || depotConfig.depotId;
-    }
+  if (schedule.region) {
+    const depot = depots.find(d => d.id === schedule.region);
+    destDepot = depot?.code || depot?.name || String(schedule.region);
   }
 
-  // Check for linehaul
   const hasLinehaul = schedule.legs.some(l => l.config.type === 'linehaul');
 
-  // Get speed display (use delivery speed as primary)
   let speedDisplay = '—';
-  if (schedule.defaultDeliverySpeedId) {
-    const speed = speeds.find(s => s.id === schedule.defaultDeliverySpeedId);
+  if (schedule.speedId) {
+    const speed = speeds.find(s => s.id === schedule.speedId);
     speedDisplay = speed?.code || speed?.name || '—';
   }
 
@@ -623,7 +1043,7 @@ export function scheduleToTableRow(
     clientDisplay,
     status: schedule.isActive ? 'active' : 'inactive',
     isOverride: schedule.isOverride,
-    baseScheduleId: schedule.baseScheduleId,
+    baseScheduleName: schedule.baseScheduleName,
     overrideCount,
     depth: schedule.isOverride ? 1 : 0,
     schedule,
@@ -638,14 +1058,14 @@ export function buildScheduleTableData(
   schedules: Schedule[],
   depots: DepotReference[],
   clients: ClientReference[],
-  speeds: SpeedReference[]
+  speeds: SpeedReference[],
 ): ScheduleTableRow[] {
   const rows: ScheduleTableRow[] = [];
   const baseSchedules = schedules.filter(s => !s.isOverride);
   const overrides = schedules.filter(s => s.isOverride);
 
   baseSchedules.forEach(base => {
-    const childOverrides = overrides.filter(o => o.baseScheduleId === base.id);
+    const childOverrides = overrides.filter(o => o.baseScheduleName === base.name);
     rows.push(scheduleToTableRow(base, depots, clients, speeds, childOverrides.length));
     childOverrides.forEach(override => {
       rows.push(scheduleToTableRow(override, depots, clients, speeds, 0));
@@ -656,7 +1076,7 @@ export function buildScheduleTableData(
 }
 
 // ============================================
-// BULK OPERATION TYPES
+// BULK OPERATION TYPES (frontend-only)
 // ============================================
 
 export type BulkEditMode = 'absolute' | 'relative';
@@ -664,7 +1084,7 @@ export type BulkEditMode = 'absolute' | 'relative';
 export type BulkEditFieldType =
   | 'cutoffValue'
   | 'cutoffUnit'
-  | 'pickupMinutesBefore'
+  | 'pickupTimeMode'
   | 'departureTime'
   | 'deliveryWindowStart'
   | 'deliveryWindowEnd'
@@ -681,7 +1101,7 @@ export interface BulkEditField {
 export type WarningLevel = 'ok' | 'caution' | 'conflict';
 
 export interface BulkEditPreviewRow {
-  scheduleId: string;
+  scheduleId: number;
   scheduleName: string;
   included: boolean;
   beforeValue: string;
@@ -697,7 +1117,7 @@ export interface BulkEditState {
 
 export const BULK_EDITABLE_FIELDS: { field: BulkEditFieldType; label: string; supportsRelative: boolean }[] = [
   { field: 'cutoffValue', label: 'Booking Cutoff', supportsRelative: true },
-  { field: 'pickupMinutesBefore', label: 'Pickup Time Offset', supportsRelative: true },
+  { field: 'pickupTimeMode', label: 'Pickup Time Mode', supportsRelative: false },
   { field: 'departureTime', label: 'Departure Time', supportsRelative: true },
   { field: 'deliveryWindowStart', label: 'Delivery Window Start', supportsRelative: true },
   { field: 'deliveryWindowEnd', label: 'Delivery Window End', supportsRelative: true },

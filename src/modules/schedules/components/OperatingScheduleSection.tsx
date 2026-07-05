@@ -94,7 +94,7 @@ export function OperatingScheduleSection({ schedule, onChange }: OperatingSchedu
   const exceptions = schedule.cutoffExceptions || [];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="operating-schedule-section" aria-label="operating schedule section">
       {/* Operating Days */}
       <div>
         <h4 className="text-sm font-semibold text-text-primary mb-3">Operating Days</h4>

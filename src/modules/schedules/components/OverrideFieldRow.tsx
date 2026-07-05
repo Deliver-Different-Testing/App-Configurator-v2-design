@@ -1,6 +1,7 @@
 // src/modules/schedules/components/OverrideFieldRow.tsx
 import { Toggle } from '../../../components/ui/Toggle';
 
+/** Props for the OverrideFieldRow component. */
 interface OverrideFieldRowProps {
   label: string;
   baseValue: React.ReactNode;
@@ -10,6 +11,7 @@ interface OverrideFieldRowProps {
   onReset?: () => void;
 }
 
+/** Displays a single overridable field row with base/override values and toggle. */
 export function OverrideFieldRow({
   label,
   baseValue,
@@ -24,7 +26,7 @@ export function OverrideFieldRow({
         grid grid-cols-[180px_1fr_1fr_60px] gap-3 items-start p-3 rounded-lg transition-colors
         ${isOverridden ? 'bg-yellow-50 border border-yellow-200' : 'bg-white border border-border'}
       `}
-    >
+     data-testid="override-field-row">
       {/* Label */}
       <div className="text-sm font-medium text-text-primary pt-2">{label}</div>
 
@@ -56,7 +58,7 @@ export function OverrideFieldRow({
         {isOverridden && onReset && (
           <button
             onClick={onReset}
-            className="text-xs text-text-muted hover:text-brand-cyan transition-colors"
+            className="text-xs text-text-muted hover:text-brand-cyan transition-colors" aria-label="Reset override"
           >
             Reset
           </button>

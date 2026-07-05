@@ -1,13 +1,14 @@
 // src/modules/schedules/components/ScheduleGroupsTab.tsx
 import { useState, useMemo } from 'react';
-import { Copy, UserPlus } from 'lucide-react';
+import { Copy, Trash2, UserPlus } from 'lucide-react';
 import { ExpandableRow } from '../../../components/data/ExpandableRow';
 import { SearchInput } from '../../../components/filters/SearchInput';
 import { Badge } from '../../../components/ui/Badge';
 import { Button } from '../../../components/ui/Button';
+import { Modal } from '../../../components/ui/Modal';
 import { CopyGroupModal } from './CopyGroupModal';
 import { AddClientOverrideModal } from './AddClientOverrideModal';
-import { sampleScheduleGroups, sampleClients } from '../data/sampleData';
+import { sampleClients } from '../data/sampleData';
 import type { SourceItem, EntityConnections } from '../../territory/types';
 import { countConnectedCategories } from '../../territory/types';
 import type { ScheduleGroup, Schedule, BulkEditField } from '../types';
@@ -15,25 +16,32 @@ import type { ScheduleGroup, Schedule, BulkEditField } from '../types';
 interface ScheduleGroupsTabProps {
   onConnectionsClick: (sourceItem: SourceItem, connections: EntityConnections) => void;
   schedules: Schedule[];
-  onCopyGroup: (newGroupName: string, scheduleIds: string[], edits: BulkEditField[]) => void;
-  onApplyClientOverrides: (clientId: string, scheduleIds: string[], edits: BulkEditField[]) => void;
-  onViewSchedule: (scheduleId: string) => void;
+  onCopyGroup: (newGroupName: string, scheduleIds: number[], edits: BulkEditField[]) => void;
+  onDuplicateGroup: (group: ScheduleGroup) => void;
+  onApplyClientOverrides: (clientId: number, scheduleIds: number[], edits: BulkEditField[]) => void;
+  onViewSchedule: (scheduleId: number) => void;
+  onDeleteGroup: (group: ScheduleGroup) => void;
+  groups: ScheduleGroup[];
 }
 
 export function ScheduleGroupsTab({
   onConnectionsClick,
   schedules,
   onCopyGroup,
+  onDuplicateGroup,
   onApplyClientOverrides,
   onViewSchedule,
+  onDeleteGroup,
+  groups,
 }: ScheduleGroupsTabProps) {
-  const [expandedItem, setExpandedItem] = useState<string | null>(null);
+  const [expandedItem, setExpandedItem] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [copyModalGroup, setCopyModalGroup] = useState<ScheduleGroup | null>(null);
   const [overrideModalGroup, setOverrideModalGroup] = useState<ScheduleGroup | null>(null);
+  const [groupPendingDelete, setGroupPendingDelete] = useState<ScheduleGroup | null>(null);
 
   const filteredGroups = useMemo(() => {
-    return sampleScheduleGroups.filter((group) => {
+    return groups.filter((group) => {
       if (searchTerm) {
         const searchLower = searchTerm.toLowerCase();
         const matchesName = group.name.toLowerCase().includes(searchLower);
@@ -42,14 +50,14 @@ export function ScheduleGroupsTab({
       }
       return true;
     });
-  }, [searchTerm]);
+  }, [groups, searchTerm]);
 
-  const handleToggle = (groupId: string) => {
+  const handleToggle = (groupId: number) => {
     setExpandedItem(expandedItem === groupId ? null : groupId);
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-testid="schedule-groups-tab" aria-label="schedule groups tab">
       {/* Search */}
       <SearchInput
         value={searchTerm}
@@ -59,7 +67,7 @@ export function ScheduleGroupsTab({
 
       {/* Results count */}
       <div className="text-sm text-text-secondary">
-        Showing {filteredGroups.length} of {sampleScheduleGroups.length} schedule groups
+        Showing {filteredGroups.length} of {groups.length} schedule groups
       </div>
 
       {/* Groups List */}
@@ -72,7 +80,7 @@ export function ScheduleGroupsTab({
           return (
             <ExpandableRow
               key={group.id}
-              id={group.id}
+              id={String(group.id)}
               name={group.name}
               badge={{
                 text: group.isActive ? 'Active' : 'Inactive',
@@ -89,7 +97,7 @@ export function ScheduleGroupsTab({
               onConnectionsClick={() =>
                 onConnectionsClick(
                   {
-                    id: group.id,
+                    id: String(group.id),
                     type: 'schedule',
                     name: group.name,
                     subtitle: group.description,
@@ -97,11 +105,44 @@ export function ScheduleGroupsTab({
                   group.connections
                 )
               }
+              actions={
+                <>
+                  <button
+                    type="button"
+                    aria-label={`Copy schedule group ${group.name}`}
+                    title="Copy schedule group"
+                    onClick={() => onDuplicateGroup(group)}
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-text-muted hover:bg-brand-cyan/10 hover:text-brand-dark focus:outline-none focus:ring-2 focus:ring-brand-cyan"
+                  >
+                    <Copy className="w-4 h-4" />
+                  </button>
+                  <button
+                    type="button"
+                    aria-label={`Delete schedule group ${group.name}`}
+                    title="Delete schedule group"
+                    onClick={() => setGroupPendingDelete(group)}
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-text-muted hover:bg-error/10 hover:text-error focus:outline-none focus:ring-2 focus:ring-error"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </>
+              }
             >
               {/* Expanded content - show member schedules and actions */}
               <div className="p-4 bg-surface-cream rounded-lg space-y-4">
                 {/* Action buttons */}
-                <div className="flex gap-2">
+                <div className="flex flex-col md:flex-row gap-2">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDuplicateGroup(group);
+                    }}
+                  >
+                    <Copy className="w-4 h-4 mr-1" />
+                    Quick Copy
+                  </Button>
                   <Button
                     variant="secondary"
                     size="sm"
@@ -111,7 +152,7 @@ export function ScheduleGroupsTab({
                     }}
                   >
                     <Copy className="w-4 h-4 mr-1" />
-                    Copy Group
+                    Copy & Edit
                   </Button>
                   <Button
                     variant="secondary"
@@ -211,6 +252,35 @@ export function ScheduleGroupsTab({
           onViewSchedule={onViewSchedule}
         />
       )}
+
+      <Modal
+        isOpen={groupPendingDelete !== null}
+        onClose={() => setGroupPendingDelete(null)}
+        title="Delete schedule group?"
+        subtitle={groupPendingDelete ? groupPendingDelete.name : undefined}
+        size="sm"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setGroupPendingDelete(null)}>
+              Cancel
+            </Button>
+            <Button
+              variant="danger"
+              onClick={() => {
+                if (!groupPendingDelete) return;
+                onDeleteGroup(groupPendingDelete);
+                setGroupPendingDelete(null);
+              }}
+            >
+              Delete group
+            </Button>
+          </>
+        }
+      >
+        <p className="text-sm text-text-secondary">
+          Are you sure you want to delete this schedule group? This will not delete the schedules inside it.
+        </p>
+      </Modal>
     </div>
   );
 }

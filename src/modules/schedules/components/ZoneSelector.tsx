@@ -7,19 +7,26 @@ import { sampleZones } from '../data/sampleData';
 import type { ZoneReference } from '../types';
 
 interface ZoneSelectorProps {
-  selectedZoneIds: string[];
-  onChange: (zoneIds: string[]) => void;
+  selectedZoneIds: number[];
+  onChange: (zoneIds: number[]) => void;
   label: string;
   helpText?: string;
   zones?: ZoneReference[]; // Optional custom zones, defaults to sampleZones
+  disabled?: boolean;
 }
 
+/**
+ * Multi-select zone picker with search, select-all, and tag-based display.
+ * Renders selected zones as removable badges above a searchable dropdown.
+ */
+/** Multi-select zone picker with search and selection controls. */
 export function ZoneSelector({
   selectedZoneIds,
   onChange,
   label,
   helpText,
   zones = sampleZones,
+  disabled = false,
 }: ZoneSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -49,7 +56,8 @@ export function ZoneSelector({
 
   const selectedZones = zones.filter((zone) => selectedZoneIds.includes(zone.id));
 
-  const handleToggleZone = (zoneId: string) => {
+  const handleToggleZone = (zoneId: number) => {
+    if (disabled) return;
     if (selectedZoneIds.includes(zoneId)) {
       onChange(selectedZoneIds.filter((id) => id !== zoneId));
     } else {
@@ -58,14 +66,17 @@ export function ZoneSelector({
   };
 
   const handleSelectAll = () => {
+    if (disabled) return;
     onChange(zones.map((z) => z.id));
   };
 
   const handleClear = () => {
+    if (disabled) return;
     onChange([]);
   };
 
-  const handleRemoveZone = (zoneId: string) => {
+  const handleRemoveZone = (zoneId: number) => {
+    if (disabled) return;
     onChange(selectedZoneIds.filter((id) => id !== zoneId));
   };
 
@@ -97,6 +108,7 @@ export function ZoneSelector({
               )}
               <button
                 onClick={() => handleRemoveZone(zone.id)}
+                disabled={disabled}
                 className="ml-1 hover:bg-white/20 rounded p-0.5 transition-colors"
                 aria-label={`Remove ${zone.name}`}
               >
@@ -111,9 +123,18 @@ export function ZoneSelector({
       <div className="relative" ref={dropdownRef}>
         <button
           type="button"
-          onClick={() => setIsOpen(!isOpen)}
-          className="w-full flex items-center justify-between px-3 py-2 bg-white border border-border
-                   rounded-lg text-sm text-text-primary hover:border-brand-cyan transition-colors"
+          onClick={() => {
+            if (!disabled) setIsOpen(!isOpen);
+          }}
+          aria-expanded={isOpen}
+          aria-haspopup="listbox"
+          aria-label={`${label}: ${selectedZones.length === 0 ? 'Select zones' : `${selectedZones.length} zone${selectedZones.length === 1 ? '' : 's'} selected`}`}
+          data-testid="zone-selector-trigger"
+          disabled={disabled}
+          className={`w-full flex items-center justify-between px-3 py-2 bg-white border border-border
+                   rounded-lg text-sm text-text-primary transition-colors ${
+                     disabled ? 'cursor-not-allowed bg-surface-light opacity-70' : 'hover:border-brand-cyan'
+                   }`}
         >
           <span className="text-text-secondary">
             {selectedZones.length === 0

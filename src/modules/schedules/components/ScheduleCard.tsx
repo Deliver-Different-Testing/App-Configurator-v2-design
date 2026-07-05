@@ -2,6 +2,7 @@
 // Note: This component provides a standalone card view for schedules.
 // It may not be needed if ExpandableRow is used everywhere, but it's here for flexibility.
 
+import { memo } from 'react';
 import { Badge } from '../../../components/ui/Badge';
 import type { Schedule, DepotReference } from '../types';
 import { getRouteDescription, getBookingModeLabel, getActiveDaysSummary, countLegs } from '../types';
@@ -12,10 +13,16 @@ interface ScheduleCardProps {
   depots: DepotReference[];
 }
 
-export function ScheduleCard({ schedule, onClick, depots }: ScheduleCardProps) {
+/** Schedule card displaying summary info. Click to select/expand. */
+export const ScheduleCard = memo(function ScheduleCard({ schedule, onClick, depots }: ScheduleCardProps) {
   return (
     <div
       onClick={onClick}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      aria-label={`Schedule: ${schedule.name}`}
+      onKeyDown={onClick ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(); } } : undefined}
+      data-testid={`schedule-card-${schedule.id}`}
       className={`
         bg-white rounded-lg border border-border p-4 transition-all
         ${onClick ? 'cursor-pointer hover:shadow-md hover:border-brand-cyan' : ''}
@@ -65,9 +72,9 @@ export function ScheduleCard({ schedule, onClick, depots }: ScheduleCardProps) {
       {/* Badges */}
       <div className="flex gap-2 mt-3 flex-wrap">
         <Badge variant="blue" size="sm">
-          {schedule.clientVisibility === 'all'
+          {schedule.clientId == null
             ? 'All Clients'
-            : `${schedule.clientIds.length} Client${schedule.clientIds.length !== 1 ? 's' : ''}`}
+            : '1 Client'}
         </Badge>
         {schedule.isOverride && (
           <Badge variant="system" size="sm">
@@ -77,4 +84,4 @@ export function ScheduleCard({ schedule, onClick, depots }: ScheduleCardProps) {
       </div>
     </div>
   );
-}
+});

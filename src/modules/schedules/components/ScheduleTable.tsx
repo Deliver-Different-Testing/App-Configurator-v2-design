@@ -1,10 +1,12 @@
 // src/modules/schedules/components/ScheduleTable.tsx
 import { useMemo, useState } from 'react';
-import { ChevronDown, ChevronUp, Check, X } from 'lucide-react';
+import { ChevronDown, ChevronUp, Check, Copy, Trash2, X } from 'lucide-react';
 import { Badge } from '../../../components/ui/Badge';
 import { SearchInput } from '../../../components/filters/SearchInput';
 import { FilterDropdown } from '../../../components/filters/FilterDropdown';
 import { ConnectionBadge } from '../../../components/tags/ConnectionBadge';
+import { DayPills } from '../../../components/ui/DayPills';
+import { ActiveToggle } from '../../../components/ui/ActiveToggle';
 import type { Schedule, ScheduleFilterState, SortConfig, SortableColumn } from '../types';
 import { buildScheduleTableData, getBookingModeLabel } from '../types';
 import { sampleDepots, sampleClients, sampleSpeeds } from '../data/sampleData';
@@ -18,6 +20,9 @@ interface ScheduleTableProps {
   externalSearchQuery?: string;
   externalTagSearch?: string;
   onConnectionsClick?: (schedule: Schedule) => void;
+  onToggleActive?: (schedule: Schedule, newValue: boolean) => void;
+  onCopySchedule?: (schedule: Schedule) => void;
+  onDeleteSchedule?: (schedule: Schedule) => void;
 }
 
 // Count all connections for a schedule (clients, depots, linehauls, etc.)
@@ -25,12 +30,12 @@ function getConnectionCount(schedule: Schedule): number {
   let count = 0;
 
   // Clients
-  if (schedule.clientVisibility === 'specific') {
-    count += schedule.clientIds.length;
+  if (schedule.clientId) {
+    count += 1;
   }
 
   // Origin depot
-  if (schedule.originDepotId) {
+  if (schedule.pickupDepotId) {
     count += 1;
   }
 
@@ -50,6 +55,9 @@ export function ScheduleTable({
   externalSearchQuery = '',
   externalTagSearch = '',
   onConnectionsClick,
+  onToggleActive,
+  onCopySchedule,
+  onDeleteSchedule,
 }: ScheduleTableProps) {
   const [filters, setFilters] = useState<ScheduleFilterState>({
     search: '',
@@ -131,8 +139,8 @@ export function ScheduleTable({
 
     return [...filteredRows].sort((a, b) => {
       if (a.isOverride !== b.isOverride) {
-        if (a.baseScheduleId === b.id) return 1;
-        if (b.baseScheduleId === a.id) return -1;
+        if (a.baseScheduleName === b.name) return 1;
+        if (b.baseScheduleName === a.name) return -1;
       }
 
       const aVal = a[column] ?? '';
@@ -212,14 +220,14 @@ export function ScheduleTable({
       </div>
 
       {/* Table */}
-      <div className="flex-1 overflow-auto">
-        <table className="w-full text-sm table-fixed">
+      <div className="flex-1 overflow-x-auto overflow-y-auto">
+        <table className="w-full text-sm" data-testid="schedule-table" aria-label="schedule table">
+          <caption className="sr-only">Schedule list with sorting and filtering</caption>
           <thead className="bg-surface-light sticky top-0 z-10">
             <tr className="border-b border-border">
-              <th className="text-center py-2 px-2 font-medium text-text-muted uppercase text-xs w-24"></th>
               <th
                 onClick={() => handleSort('name')}
-                className={`text-left py-2 px-2 font-medium uppercase text-xs cursor-pointer hover:text-text-primary hover:bg-surface-cream select-none transition-colors w-[25%] ${sortConfig?.column === 'name' ? 'text-brand-dark bg-brand-cyan/5' : 'text-text-muted'}`}
+                className={`text-left py-2 px-2 font-medium uppercase text-xs cursor-pointer hover:text-text-primary hover:bg-surface-cream select-none transition-colors  ${sortConfig?.column === 'name' ? 'text-brand-dark bg-brand-cyan/5' : 'text-text-muted'}`}
               >
                 <div className="flex items-center gap-1">
                   <span>Name</span>
@@ -229,9 +237,10 @@ export function ScheduleTable({
                   </span>
                 </div>
               </th>
+              <th className="text-center py-2 px-2 font-medium text-text-muted uppercase text-xs ">Days</th>
               <th
                 onClick={() => handleSort('originDepot')}
-                className={`text-left py-2 px-2 font-medium uppercase text-xs cursor-pointer hover:text-text-primary hover:bg-surface-cream select-none transition-colors w-[10%] ${sortConfig?.column === 'originDepot' ? 'text-brand-dark bg-brand-cyan/5' : 'text-text-muted'}`}
+                className={`hidden md:table-cell text-left py-2 px-2 font-medium uppercase text-xs cursor-pointer hover:text-text-primary hover:bg-surface-cream select-none transition-colors  ${sortConfig?.column === 'originDepot' ? 'text-brand-dark bg-brand-cyan/5' : 'text-text-muted'}`}
               >
                 <div className="flex items-center gap-1">
                   <span>Origin</span>
@@ -243,7 +252,7 @@ export function ScheduleTable({
               </th>
               <th
                 onClick={() => handleSort('destDepot')}
-                className={`text-left py-2 px-2 font-medium uppercase text-xs cursor-pointer hover:text-text-primary hover:bg-surface-cream select-none transition-colors w-[10%] ${sortConfig?.column === 'destDepot' ? 'text-brand-dark bg-brand-cyan/5' : 'text-text-muted'}`}
+                className={`hidden md:table-cell text-left py-2 px-2 font-medium uppercase text-xs cursor-pointer hover:text-text-primary hover:bg-surface-cream select-none transition-colors  ${sortConfig?.column === 'destDepot' ? 'text-brand-dark bg-brand-cyan/5' : 'text-text-muted'}`}
               >
                 <div className="flex items-center gap-1">
                   <span>Dest</span>
@@ -253,10 +262,10 @@ export function ScheduleTable({
                   </span>
                 </div>
               </th>
-              <th className="text-center py-2 px-2 font-medium text-text-muted uppercase text-xs w-12">LH</th>
+              <th className="hidden md:table-cell text-center py-2 px-2 font-medium text-text-muted uppercase text-xs w-12">LH</th>
               <th
                 onClick={() => handleSort('speedDisplay')}
-                className={`text-left py-2 px-2 font-medium uppercase text-xs cursor-pointer hover:text-text-primary hover:bg-surface-cream select-none transition-colors w-[10%] ${sortConfig?.column === 'speedDisplay' ? 'text-brand-dark bg-brand-cyan/5' : 'text-text-muted'}`}
+                className={`hidden lg:table-cell text-left py-2 px-2 font-medium uppercase text-xs cursor-pointer hover:text-text-primary hover:bg-surface-cream select-none transition-colors  ${sortConfig?.column === 'speedDisplay' ? 'text-brand-dark bg-brand-cyan/5' : 'text-text-muted'}`}
               >
                 <div className="flex items-center gap-1">
                   <span>Speed</span>
@@ -268,7 +277,7 @@ export function ScheduleTable({
               </th>
               <th
                 onClick={() => handleSort('bookingMode')}
-                className={`text-left py-2 px-2 font-medium uppercase text-xs cursor-pointer hover:text-text-primary hover:bg-surface-cream select-none transition-colors w-[12%] ${sortConfig?.column === 'bookingMode' ? 'text-brand-dark bg-brand-cyan/5' : 'text-text-muted'}`}
+                className={`hidden lg:table-cell text-left py-2 px-2 font-medium uppercase text-xs cursor-pointer hover:text-text-primary hover:bg-surface-cream select-none transition-colors w-[12%] ${sortConfig?.column === 'bookingMode' ? 'text-brand-dark bg-brand-cyan/5' : 'text-text-muted'}`}
               >
                 <div className="flex items-center gap-1">
                   <span>Mode</span>
@@ -278,7 +287,7 @@ export function ScheduleTable({
                   </span>
                 </div>
               </th>
-              <th className="text-left py-2 px-2 font-medium text-text-muted uppercase text-xs w-[18%]">
+              <th className="hidden lg:table-cell text-left py-2 px-2 font-medium text-text-muted uppercase text-xs w-[18%]">
                 Connections
               </th>
               <th
@@ -293,11 +302,12 @@ export function ScheduleTable({
                   </span>
                 </div>
               </th>
+              <th className="text-center py-2 px-2 font-medium text-text-muted uppercase text-xs w-20">Actions</th>
             </tr>
           </thead>
           <tbody>
             {visibleRows.map((row) => {
-              const isSelected = selectedId === row.id;
+              const isSelected = selectedId === String(row.id);
               const hasOverrides = !row.isOverride && row.overrideCount > 0;
 
               return (
@@ -310,9 +320,6 @@ export function ScheduleTable({
                     ${row.depth > 0 ? 'bg-surface-cream/50' : ''}
                   `}
                 >
-                  {/* Empty first column - keeping for layout consistency */}
-                  <td className="py-1.5 px-2"></td>
-
                   {/* Name */}
                   <td className={`py-1.5 px-2 font-medium text-text-primary ${row.depth > 0 ? 'pl-5' : ''}`}>
                     <div className="flex items-center gap-1.5 min-w-0">
@@ -328,18 +335,25 @@ export function ScheduleTable({
                     </div>
                   </td>
 
+                  {/* Days */}
+                  <td className="py-1.5 px-2">
+                    {!row.isOverride && (
+                      <DayPills days={row.schedule.operatingSchedule.days} size="sm" />
+                    )}
+                  </td>
+
                   {/* Origin Depot */}
-                  <td className="py-1.5 px-2 text-text-secondary text-xs truncate">
+                  <td className="hidden md:table-cell py-1.5 px-2 text-text-secondary text-xs truncate">
                     {row.isOverride ? '—' : row.originDepot}
                   </td>
 
                   {/* Destination Depot */}
-                  <td className="py-1.5 px-2 text-text-secondary text-xs truncate">
+                  <td className="hidden md:table-cell py-1.5 px-2 text-text-secondary text-xs truncate">
                     {row.isOverride ? '—' : row.destDepot}
                   </td>
 
                   {/* Linehaul Y/N */}
-                  <td className="py-1.5 px-2 text-center">
+                  <td className="hidden md:table-cell py-1.5 px-2 text-center">
                     {row.isOverride ? (
                       <span className="text-text-muted">—</span>
                     ) : row.hasLinehaul ? (
@@ -350,17 +364,17 @@ export function ScheduleTable({
                   </td>
 
                   {/* Speed */}
-                  <td className="py-1.5 px-2 text-text-secondary text-xs truncate">
+                  <td className="hidden lg:table-cell py-1.5 px-2 text-text-secondary text-xs truncate">
                     {row.speedDisplay}
                   </td>
 
                   {/* Mode */}
-                  <td className="py-1.5 px-2 text-text-secondary text-xs truncate">
+                  <td className="hidden lg:table-cell py-1.5 px-2 text-text-secondary text-xs truncate">
                     {row.isOverride ? '—' : getBookingModeLabel(row.bookingMode)}
                   </td>
 
                   {/* Connections */}
-                  <td className="py-1.5 px-2">
+                  <td className="hidden lg:table-cell py-1.5 px-2">
                     <ConnectionBadge
                       connectionCount={getConnectionCount(row.schedule)}
                       onClick={(e) => {
@@ -373,7 +387,40 @@ export function ScheduleTable({
 
                   {/* Status */}
                   <td className="py-1.5 px-2">
-                    <span className={`inline-block w-2 h-2 rounded-full ${row.status === 'active' ? 'bg-green-500' : 'bg-gray-300'}`} title={row.status === 'active' ? 'Active' : 'Inactive'} />
+                    <ActiveToggle
+                      isActive={row.status === 'active'}
+                      onToggle={(newValue) => onToggleActive?.(row.schedule, newValue)}
+                    />
+                  </td>
+
+                  {/* Actions */}
+                  <td className="py-1.5 px-2 text-center">
+                    <div className="inline-flex items-center gap-1">
+                      <button
+                        type="button"
+                        aria-label={`Copy schedule ${row.name}`}
+                        title="Copy schedule"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onCopySchedule?.(row.schedule);
+                        }}
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-text-muted hover:bg-brand-cyan/10 hover:text-brand-dark focus:outline-none focus:ring-2 focus:ring-brand-cyan"
+                      >
+                        <Copy className="w-4 h-4" />
+                      </button>
+                      <button
+                        type="button"
+                        aria-label={`Delete schedule ${row.name}`}
+                        title="Delete schedule"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onDeleteSchedule?.(row.schedule);
+                        }}
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-text-muted hover:bg-error/10 hover:text-error focus:outline-none focus:ring-2 focus:ring-error"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               );

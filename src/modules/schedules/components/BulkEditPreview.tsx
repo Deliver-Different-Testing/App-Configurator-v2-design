@@ -5,8 +5,8 @@ import type { BulkEditPreviewRow } from '../types';
 interface BulkEditPreviewProps {
   rows: BulkEditPreviewRow[];
   fieldLabel: string;
-  onToggleInclude: (scheduleId: string) => void;
-  onViewSchedule: (scheduleId: string) => void;
+  onToggleInclude: (scheduleId: number) => void;
+  onViewSchedule: (scheduleId: number) => void;
 }
 
 export function BulkEditPreview({
@@ -42,7 +42,7 @@ export function BulkEditPreview({
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3" data-testid="bulk-edit-preview" aria-label="bulk edit preview">
       {/* Header */}
       <div className="text-sm font-medium text-text-primary">
         Preview: {fieldLabel}
