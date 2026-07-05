@@ -4,7 +4,236 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>DFRNT Rating Rewrite Prototype</title>
-  <link rel="stylesheet" href="./colors_and_type.css" />
+  <style>
+/* ============================================================
+   DFRNT — Colors & Type
+   Core design tokens for the DFRNT TMS ecosystem.
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap');
+
+:root {
+  /* ---------- PRIMARY BRAND ---------- */
+  --c-ink-blue:        #0d0c2c;   /* primary dark, main text, dark surfaces   */
+  --c-ink-blue-60:     #6e6d80;   /* 60% tint (muted text on light)           */
+  --c-ink-blue-20:     #cfced5;   /* 20% tint (dividers on light)             */
+
+  --c-cyan:            #3bc7f4;   /* brand cyan — CTAs, accents, active       */
+  --c-cyan-40:         #b1e9fb;
+  --c-cyan-20:         #d8f4fd;
+
+  --c-light-grey:      #f4f2f1;   /* warm off-white app background            */
+  --c-light-grey-60:   #f8f7f7;
+  --c-white:           #ffffff;
+
+  /* Admin UI close-variants (per DESIGN-SYSTEM.md extended palette) */
+  --c-admin-dark:      #14152D;   /* slightly warmer dark used in admin       */
+  --c-admin-cyan:      #43C7F4;   /* admin UI cyan (hex case variant)         */
+  --c-admin-purple:    #606DB4;   /* secondary purple used in admin chrome    */
+
+  /* ---------- SECONDARY ---------- */
+  --c-reflex-blue:     #2a4eff;   --c-reflex-blue-40: #aab8ff;  --c-reflex-blue-20: #d4dcff;
+  --c-purple:          #824ae0;   --c-purple-40:      #cdb7f3;  --c-purple-20:      #e6dbf9;
+  --c-green:           #13b964;   --c-green-40:       #a1e3c1;  --c-green-20:       #d0f1e0;
+  --c-orange:          #fe811a;   --c-orange-40:      #ffcda3;  --c-orange-20:      #ffe6d1;
+  --c-red:             #dc3246;   --c-red-40:         #f1adb5;  --c-red-20:         #f8d6da;
+
+  /* ---------- SEMANTIC SURFACE ---------- */
+  --bg-app:         var(--c-light-grey);      /* warm grey app bg — not pure white */
+  --bg-surface:     #fafbfc;                  /* subtle cream card surface         */
+  --bg-elevated:    var(--c-white);           /* elevated cards / menus            */
+  --bg-inverse:     var(--c-ink-blue);        /* dark surfaces, navigation         */
+
+  /* ---------- SEMANTIC FOREGROUND ---------- */
+  --fg-1:           var(--c-ink-blue);        /* primary text                      */
+  --fg-2:           #64748b;                  /* secondary text                    */
+  --fg-3:           #94a3b8;                  /* muted / tertiary                  */
+  --fg-on-dark:     rgba(255,255,255,0.92);
+  --fg-on-dark-2:   rgba(255,255,255,0.62);
+  --fg-on-dark-3:   rgba(255,255,255,0.38);
+  --fg-accent:      var(--c-cyan);            /* cyan links / active label         */
+
+  /* ---------- BORDERS / DIVIDERS ---------- */
+  --border:         #e8ecf1;                  /* default border                    */
+  --border-light:   #f1f5f9;                  /* subtle divider                    */
+  --border-strong:  #d0d5dd;
+
+  /* ---------- SEMANTIC STATE ---------- */
+  --success:        var(--c-green);           --success-bg: var(--c-green-20);
+  --warning:        var(--c-orange);          --warning-bg: var(--c-orange-20);
+  --error:          var(--c-red);             --error-bg:   var(--c-red-20);
+  --info:           var(--c-cyan);            --info-bg:    var(--c-cyan-20);
+
+  /* ---------- SPACING (8pt grid) ---------- */
+  --space-xs: 4px;  --space-sm: 8px;  --space-md: 16px;
+  --space-lg: 24px; --space-xl: 32px; --space-2xl: 48px;
+
+  /* ---------- RADII ---------- */
+  --radius-sm: 4px; --radius-md: 8px; --radius-lg: 12px;
+  --radius-xl: 16px; --radius-full: 9999px;
+  --radius-lozenge: 9999px;                   /* DFRNT primary button shape        */
+
+  /* ---------- SHADOWS ---------- */
+  --shadow-sm:    0 1px 2px  rgba(0,14,37,0.05);
+  --shadow-md:    0 2px 8px  rgba(0,14,37,0.08);
+  --shadow-lg:    0 4px 12px rgba(0,14,37,0.12);
+  --shadow-xl:    0 8px 24px rgba(0,14,37,0.15);
+  --shadow-cyan:  0 4px 12px rgba(67,199,244,0.30);
+  --shadow-sidebar: -4px 0 24px rgba(0,14,37,0.15);
+
+  /* ---------- MOTION ---------- */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --t-fast: 150ms ease;
+  --t-norm: 200ms ease;
+  --t-slow: 300ms ease;
+  --t-expand: 500ms ease-out;
+
+  /* ---------- TYPOGRAPHY ---------- */
+  --font-display:  'DM Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-body:     'DM Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-ui:       'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-ui-legacy:'Roboto', ui-sans-serif, system-ui, sans-serif;
+  --font-mono:     ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+
+  /* Type scale (software UI — leans larger than web typical) */
+  --text-2xs: 11px;
+  --text-xs:  12px;
+  --text-sm:  13px;
+  --text-base:14px;
+  --text-md:  16px;
+  --text-lg:  18px;
+  --text-xl:  20px;
+  --text-2xl: 24px;
+  --text-3xl: 28px;
+  --text-4xl: 36px;
+  --text-5xl: 48px;
+  --text-6xl: 64px;
+
+  --lh-tight: 1.1;
+  --lh-snug:  1.25;
+  --lh-norm:  1.5;
+  --lh-loose: 1.7;
+
+  --track-tight:  -0.02em;
+  --track-normal: 0;
+  --track-wide:   0.04em;
+  --track-caps:   0.08em;
+}
+
+/* ============================================================
+   Semantic typographic styles (use these, not raw sizes)
+   ============================================================ */
+
+.display-hero, h1.display {
+  font-family: var(--font-display);
+  font-weight: 600;              /* DM Sans Semibold = brand headline weight   */
+  font-size: clamp(44px, 6vw, var(--text-6xl));
+  line-height: var(--lh-tight);
+  letter-spacing: var(--track-tight);
+  color: var(--fg-1);
+}
+
+h1, .h1 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--text-4xl);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--track-tight);
+  color: var(--fg-1);
+}
+
+h2, .h2 {
+  font-family: var(--font-display);
+  font-weight: 700;              /* DM Sans Bold for sub-headings              */
+  font-size: var(--text-2xl);
+  line-height: var(--lh-snug);
+  letter-spacing: var(--track-tight);
+  color: var(--fg-1);
+}
+
+h3, .h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--text-xl);
+  line-height: var(--lh-snug);
+  color: var(--fg-1);
+}
+
+h4, .h4 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--text-md);
+  line-height: var(--lh-snug);
+  color: var(--fg-1);
+}
+
+p, .body {
+  font-family: var(--font-body);
+  font-weight: 400;              /* DM Sans Regular for body                   */
+  font-size: var(--text-md);
+  line-height: var(--lh-norm);
+  color: var(--fg-1);
+}
+
+.body-sm {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: var(--text-sm);
+  line-height: var(--lh-norm);
+  color: var(--fg-2);
+}
+
+.ui, .ui-text {
+  font-family: var(--font-ui);   /* Inter preferred for new software UI        */
+  font-weight: 400;
+  font-size: var(--text-base);
+  line-height: var(--lh-norm);
+  color: var(--fg-1);
+}
+
+.ui-label {
+  font-family: var(--font-ui);
+  font-weight: 500;
+  font-size: var(--text-xs);
+  letter-spacing: var(--track-caps);
+  text-transform: uppercase;
+  color: var(--fg-2);
+}
+
+.eyebrow {
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: var(--text-xs);
+  letter-spacing: var(--track-caps);
+  text-transform: uppercase;
+  color: var(--fg-accent);
+}
+
+.tagline {
+  /* "Deliver Different" tagline — DM Sans Semibold */
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: var(--track-tight);
+  color: var(--fg-1);
+}
+
+code, .code {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 1px 6px;
+}
+
+a { color: var(--fg-accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* Base page defaults */
+html { font-family: var(--font-body); color: var(--fg-1); background: var(--bg-app); }
+body { margin: 0; font-size: var(--text-md); line-height: var(--lh-norm); -webkit-font-smoothing: antialiased; }
+
+  </style>
   <style>
     * { box-sizing: border-box; }
     html, body { margin: 0; height: 100%; background: var(--bg-app); color: var(--fg-1); font-family: var(--font-ui); }
@@ -138,35 +367,34 @@
   <div class="app drawer-open" id="app">
     <aside class="sidebar">
       <div class="brand">
-        <div class="eyebrow">System / Configurator</div>
-        <h3>Rating</h3>
-        <p>One place for commercial rates, pricing components and service mapping.</p>
+        <div class="eyebrow">Business</div>
+        <h3>Pricing & Rating</h3>
+        <p>Commercial pricing, support data and schedule-linked rating behaviour in one Business workflow.</p>
       </div>
       <nav class="nav">
         <div class="nav-group">
-          <div class="nav-group-title">Rating</div>
-          <button class="nav-item active" data-view="overview">Overview</button>
-          <button class="nav-item" data-view="ratecards">Rate Cards</button>
+          <div class="nav-group-title">Business</div>
+          <button class="nav-item" data-view="clients">Clients / Customers</button>
+          <button class="nav-item active" data-view="overview">Pricing & Rating</button>
         </div>
         <div class="nav-group">
-          <div class="nav-group-title">Commercial rates</div>
+          <div class="nav-group-title">Pricing & Rating</div>
           <div class="nav-sub">
+            <button class="nav-item" data-view="ratecards">Rate Cards</button>
             <button class="nav-item" data-view="ondemand">On-Demand</button>
             <button class="nav-item" data-view="airfreight">Air Freight</button>
-            <button class="nav-item" data-view="routed">Scheduled / Routed</button>
-          </div>
-        </div>
-        <div class="nav-group">
-          <div class="nav-group-title">Components</div>
-          <div class="nav-sub">
             <button class="nav-item" data-view="charges">Charges & Accessorials</button>
             <button class="nav-item" data-view="breaks">Break Pricing</button>
             <button class="nav-item" data-view="units">Units & Measures</button>
+            <button class="nav-item" data-view="induction">Rating Induction / Import</button>
           </div>
         </div>
         <div class="nav-group">
-          <div class="nav-group-title">Operational mapping</div>
-          <button class="nav-item" data-view="servicesetup">Service Rating Setup</button>
+          <div class="nav-group-title">Commercial structure</div>
+          <button class="nav-item" data-view="ratecodes">Rate Codes</button>
+          <button class="nav-item" data-view="pricing">Pricing</button>
+          <button class="nav-item" data-view="territory">Territory / rating support data</button>
+          <button class="nav-item" data-view="routed">schedule-linked rating behaviour</button>
         </div>
       </nav>
       <div class="sidebar-footer">
@@ -175,11 +403,22 @@
     </aside>
 
     <main class="main">
+      <section class="view" id="view-clients" hidden>
+        <div class="page-header">
+          <div><h1>Clients / Customers</h1><p>This stays as the customer list entry point. Row click opens the Client modal, with pricing and rating accessed from the Business structure beside it.</p></div>
+          <div class="header-actions"><button class="pill-btn secondary">Open client list</button><button class="pill-btn primary">+ New client</button></div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><div><h3>Client modal relationship</h3><p>Customer detail remains its own modal/workspace while pricing and rating become sibling Business navigation.</p></div><span class="badge info">Sibling module</span></div>
+          <div style="padding:16px; color: var(--fg-2); font-size: 14px;">Kerran’s client/customer modal starts here. Pricing & Rating, Rate Codes, Pricing, Territory / rating support data, and schedule-linked rating behaviour all sit alongside it under Business.</div>
+        </div>
+      </section>
+
       <section class="view" id="view-overview">
         <div class="page-header">
           <div>
-            <h1>Rating Overview</h1>
-            <p>Bring together rates, linked pricing components and service mapping without forcing users through buried System screens.</p>
+            <h1>Pricing & Rating Overview</h1>
+            <p>Fold core rating, support data and schedule-linked pricing behaviour into the agreed Business menu structure Kerran is building from.</p>
           </div>
           <div class="header-actions">
             <button class="pill-btn secondary">Import rates</button>
@@ -214,8 +453,8 @@
             </div>
           </div>
           <div class="card overview-card" data-view-jump="routed">
-            <div class="overview-title"><h3>Scheduled / Routed</h3><span class="badge warning">Builder flow</span></div>
-            <p class="body-sm">Multi-leg and bulk-distribution pricing with full editors for route logic and postcode clustering.</p>
+            <div class="overview-title"><h3>schedule-linked rating behaviour</h3><span class="badge warning">Builder flow</span></div>
+            <p class="body-sm">Multi-leg and bulk-distribution pricing with full editors for route logic and other schedule-linked commercial behaviour.</p>
             <div class="mini-metrics">
               <div class="mini"><div class="k">Templates</div><div class="v">18</div></div>
               <div class="mini"><div class="k">Bulk DCs</div><div class="v">5</div></div>
@@ -240,13 +479,22 @@
               <div class="mini"><div class="k">Linked</div><div class="v">7</div></div>
             </div>
           </div>
-          <div class="card overview-card" data-view-jump="servicesetup">
-            <div class="overview-title"><h3>Service Rating Setup</h3><span class="badge error">Needs cleanup</span></div>
-            <p class="body-sm">Service mapping, rating method behaviour, flags and operational linkage brought into one screen.</p>
+          <div class="card overview-card" data-view-jump="territory">
+            <div class="overview-title"><h3>Territory / rating support data</h3><span class="badge error">Needs cleanup</span></div>
+            <p class="body-sm">Zones, postcode scope, unit types and linked support entities brought into one coherent setup area.</p>
             <div class="mini-metrics">
-              <div class="mini"><div class="k">Services</div><div class="v">54</div></div>
+              <div class="mini"><div class="k">Zones</div><div class="v">54</div></div>
               <div class="mini"><div class="k">Unmapped</div><div class="v">3</div></div>
-              <div class="mini"><div class="k">Auto-dispatch</div><div class="v">18</div></div>
+              <div class="mini"><div class="k">Linked sets</div><div class="v">18</div></div>
+            </div>
+          </div>
+          <div class="card overview-card" data-view-jump="induction">
+            <div class="overview-title"><h3>Rating Induction / Import</h3><span class="badge info">AI assisted</span></div>
+            <p class="body-sm">Use existing rate download/upload behaviour as the base, then add AI matching so spreadsheet pricing can be translated into the best-fit DFRNT structure.</p>
+            <div class="mini-metrics">
+              <div class="mini"><div class="k">Uploads</div><div class="v">12</div></div>
+              <div class="mini"><div class="k">High confidence</div><div class="v">7</div></div>
+              <div class="mini"><div class="k">Needs review</div><div class="v">5</div></div>
             </div>
           </div>
         </div>
@@ -324,8 +572,8 @@
 
       <section class="view" id="view-routed" hidden>
         <div class="page-header">
-          <div><h1>Scheduled / Routed</h1><p>Use drawer summaries here, then drop into the richer route builder for multi-leg and bulk-distribution complexity.</p></div>
-          <div class="header-actions"><button class="pill-btn secondary">Open full builder</button><button class="pill-btn primary">+ New routed template</button></div>
+          <div><h1>schedule-linked rating behaviour</h1><p>Scheduled rates live under Business as their own sibling area. Use drawer summaries here, then drop into Dane’s richer route builder for multi-leg, bulk-distribution and other schedule-linked pricing complexity.</p></div>
+          <div class="header-actions"><button class="pill-btn secondary" data-handoff-trigger="scheduled">Open Dane's full builder</button><button class="pill-btn primary" data-open-drawer="scheduledEdit">+ New routed template</button></div>
         </div>
         <div class="split-grid">
           <div class="panel">
@@ -333,8 +581,8 @@
             <table>
               <thead><tr><th>Name</th><th>Client</th><th>Legs</th><th>Pricing basis</th><th>Linked comps</th><th>Active</th></tr></thead>
               <tbody>
-                <tr><td class="linkish">Medical North Island Shuttle</td><td>Zimmer Biomet NZ</td><td>3</td><td>Pickup + linehaul + delivery</td><td>Extra charges + break group</td><td><span class="badge success">Live</span></td></tr>
-                <tr><td class="linkish">Woop Metro Replenishment</td><td>Woop</td><td>4</td><td>Per stop + route flat</td><td>Accessorial group</td><td><span class="badge success">Live</span></td></tr>
+                <tr><td class="linkish" data-open-drawer="scheduledSummary">Medical North Island Shuttle</td><td>Zimmer Biomet NZ</td><td>3</td><td>Pickup + linehaul + delivery</td><td>Extra charges + break group</td><td><span class="badge success">Live</span></td></tr>
+                <tr><td class="linkish" data-open-drawer="scheduledSummary">Woop Metro Replenishment</td><td>Woop</td><td>4</td><td>Per stop + route flat</td><td>Accessorial group</td><td><span class="badge success">Live</span></td></tr>
               </tbody>
             </table>
           </div>
@@ -343,10 +591,43 @@
             <table>
               <thead><tr><th>Name</th><th>DC</th><th>Outbound basis</th><th>Clusters</th><th>Status</th></tr></thead>
               <tbody>
-                <tr><td class="linkish">South DC Grocery Outbound</td><td>Christchurch DC</td><td>Zone cluster</td><td>12</td><td><span class="badge success">Live</span></td></tr>
-                <tr><td class="linkish">Auckland Medical Bulk</td><td>East Tamaki Hub</td><td>Predetermined routes</td><td>8</td><td><span class="badge warning">Draft</span></td></tr>
+                <tr><td class="linkish" data-open-drawer="scheduledSummary">South DC Grocery Outbound</td><td>Christchurch DC</td><td>Zone cluster</td><td>12</td><td><span class="badge success">Live</span></td></tr>
+                <tr><td class="linkish" data-open-drawer="scheduledSummary">Auckland Medical Bulk</td><td>East Tamaki Hub</td><td>Predetermined routes</td><td>8</td><td><span class="badge warning">Draft</span></td></tr>
               </tbody>
             </table>
+          </div>
+        </div>
+
+        <div class="split-grid" style="margin-top: 14px;">
+          <div class="panel">
+            <div class="panel-header"><div><h3>Where scheduled rates sit</h3><p>Keep scheduled pricing visible in the Business IA instead of hiding it inside generic rating maintenance.</p></div></div>
+            <div class="component-list" style="padding: 14px;">
+              <div class="component-item"><div><h4>Business → schedule-linked rating behaviour</h4><p>Main menu home for routed templates, bulk-distribution templates, scheduled pricing review and release state.</p></div><span class="badge success">Primary location</span></div>
+              <div class="component-item"><div><h4>Business → Pricing & Rating</h4><p>On-demand, air and reusable pricing components stay here. Scheduled items can be referenced, but not authored here.</p></div><span class="badge info">Reference only</span></div>
+              <div class="component-item"><div><h4>Business → Rate Codes</h4><p>Scheduled-only rate codes still appear here, but they point back to the scheduled pricing setup rather than duplicating it.</p></div><span class="badge warning">Linked, not owned</span></div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header"><div><h3>Dane builder handoff</h3><p>Separate the browse/review layer from the actual scheduled-rate construction workflow.</p></div></div>
+            <div class="drawer-sections" style="padding:16px;">
+              <div class="drawer-card">
+                <h3>List + drawer layer</h3>
+                <div class="review-list">
+                  <div class="review-item"><div class="review-dot" style="background: var(--success);"></div><div><strong>Use here for read-only detail first</strong><div class="body-sm">Open a summary drawer for template name, client, active schedules, legs/stops, pricing basis, linked extras, effective dates, release state and missing links.</div></div></div>
+                  <div class="review-item"><div class="review-dot" style="background: var(--info, var(--c-cyan));"></div><div><strong>Edit stays in the drawer until complexity tips over</strong><div class="body-sm">Simple state changes, effective dates, release notes and dependency fixes can happen in-place before escalation.</div></div></div>
+                  <div class="review-item"><div class="review-dot" style="background: var(--warning);"></div><div><strong>Good for governance actions</strong><div class="body-sm">Clone, archive, review dependencies, effective-date changes, release status.</div></div></div>
+                </div>
+              </div>
+              <div class="drawer-card">
+                <h3>Full builder layer</h3>
+                <div class="review-list">
+                  <div class="review-item"><div class="review-dot" style="background: var(--info, var(--c-cyan));"></div><div><strong>Drop into Dane’s schedule work for setup</strong><div class="body-sm">Route legs, stop order, route clusters, service windows, per-stop/per-leg logic, bulk-route composition.</div></div></div>
+                  <div class="review-item"><div class="review-dot" style="background: var(--warning);"></div><div><strong>Clear handoff state matters</strong><div class="body-sm">Use an explicit “Open Dane’s full builder” handoff action with readiness status so operators know whether they are escalating by choice or because the template is incomplete.</div></div></div>
+                  <div class="review-item"><div class="review-dot" style="background: var(--error);"></div><div><strong>Do not try to force this into a tiny modal</strong><div class="body-sm">Scheduled pricing has too much structure for the old popup pattern.</div></div></div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -399,7 +680,7 @@
 
       <section class="view" id="view-units" hidden>
         <div class="page-header">
-          <div><h1>Units & Measures</h1><p>Reusable unit types shared across extra charges, break groups and rate setup.</p></div>
+          <div><h1>Units & Measures</h1><p>Reusable unit types shared across extra charges, break groups and broader territory / rating support data.</p></div>
           <div class="header-actions"><button class="pill-btn primary">+ New unit type</button></div>
         </div>
         <div class="panel">
@@ -415,21 +696,333 @@
         </div>
       </section>
 
-      <section class="view" id="view-servicesetup" hidden>
+      <section class="view" id="view-ratecodes" hidden>
         <div class="page-header">
-          <div><h1>Service Rating Setup</h1><p>Operational services mapped to rating methods, flags and linked rate structures.</p></div>
-          <div class="header-actions"><button class="pill-btn primary">+ Map service</button></div>
+          <div><h1>Rate Codes</h1><p>Code setup and rating-code assignment concepts that need their own clean menu home under Business.</p></div>
+          <div class="header-actions"><button class="pill-btn primary">+ New rate code</button></div>
         </div>
         <div class="panel">
-          <div class="panel-header"><div><h3>Service mapping</h3><p>Pull service/rating logic out of old buried service forms.</p></div></div>
+          <div class="panel-header"><div><h3>Rate code mapping</h3><p>Keep code structure separate from the core rate-card and territory setup layers.</p></div></div>
           <table>
-            <thead><tr><th>Service</th><th>Rating Method</th><th>Tracking</th><th>Auto-dispatch</th><th>Flags</th><th>Linked rates</th></tr></thead>
+            <thead><tr><th>Code</th><th>Applies to</th><th>Rating Method</th><th>Flags</th><th>Status</th><th>Linked rates</th></tr></thead>
             <tbody>
-              <tr><td class="linkish">Express</td><td>Distance rate</td><td>Tracked POD</td><td>Yes</td><td>Web, Job Entry, FAF</td><td>22</td></tr>
-              <tr><td class="linkish">Air Critical</td><td>Flight rate</td><td>Air milestone</td><td>No</td><td>Job Entry, MFV</td><td>8</td></tr>
-              <tr><td class="linkish">Bulk Metro Outbound</td><td>Bulk distribution</td><td>Route scan</td><td>No</td><td>Scheduled only</td><td>4</td></tr>
+              <tr><td class="linkish">EXP_STD</td><td>Express</td><td>Distance rate</td><td>Web, Job Entry, FAF</td><td><span class="badge success">Active</span></td><td>22</td></tr>
+              <tr><td class="linkish">AIR_CRIT</td><td>Air Critical</td><td>Flight rate</td><td>Job Entry, MFV</td><td><span class="badge success">Active</span></td><td>8</td></tr>
+              <tr><td class="linkish">BULK_METRO</td><td>Bulk Metro Outbound</td><td>Bulk distribution</td><td>Scheduled only</td><td><span class="badge warning">Draft</span></td><td>4</td></tr>
             </tbody>
           </table>
+        </div>
+      </section>
+
+      <section class="view" id="view-pricing" hidden>
+        <div class="page-header">
+          <div><h1>Pricing</h1><p>Broader commercial pricing configuration adjacent to rating, including shared pricing rules and governance.</p></div>
+          <div class="header-actions"><button class="pill-btn secondary">Review rules</button><button class="pill-btn primary">+ New pricing rule</button></div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><div><h3>Commercial pricing rules</h3><p>Shared pricing constructs that sit beside rate-card setup.</p></div><span class="badge info">Adjacent layer</span></div>
+          <table>
+            <thead><tr><th>Rule</th><th>Scope</th><th>Type</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody>
+              <tr><td>National fuel overlay</td><td>All on-demand</td><td>Percent uplift</td><td><span class="badge success">Active</span></td><td class="linkish">Open</td></tr>
+              <tr><td>Medical handling minimum</td><td>Medical services</td><td>Minimum charge</td><td><span class="badge warning">Draft</span></td><td class="linkish">Review</td></tr>
+              <tr><td>After-hours surcharge default</td><td>Client fallback</td><td>Extra charge</td><td><span class="badge success">Active</span></td><td class="linkish">Open</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="view" id="view-territory" hidden>
+        <div class="page-header">
+          <div><h1>Territory / rating support data</h1><p>Zones, postcode/zip scope, unit types and support entities that the pricing structures depend on.</p></div>
+          <div class="header-actions"><button class="pill-btn secondary">Import support data</button><button class="pill-btn primary">+ New territory set</button></div>
+        </div>
+        <div class="split-grid">
+          <div class="panel">
+            <div class="panel-header"><div><h3>Support datasets</h3><p>Core territory and support entities that keep rating structures consistent.</p></div><span class="badge warning">Needs rationalisation</span></div>
+            <div class="component-list" style="padding: 16px;">
+              <div class="component-item"><div><h4>Zones</h4><p>Pickup/drop geography used by zone and routed pricing.</p></div><span class="badge info">54 active</span></div>
+              <div class="component-item"><div><h4>Postcode scope</h4><p>Zip/postcode constraints for distance and routed logic.</p></div><span class="badge warning">3 unresolved</span></div>
+              <div class="component-item"><div><h4>Unit types</h4><p>Shared dimensions used by extras and break pricing.</p></div><span class="badge success">Connected</span></div>
+              <div class="component-item"><div><h4>Accessorial support data</h4><p>Linked unit and rule metadata behind reusable charges.</p></div><span class="badge info">Reusable</span></div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-header"><div><h3>Health summary</h3><p>Make dependencies visible before rate setup breaks downstream.</p></div></div>
+            <div class="drawer-sections" style="padding: 16px;">
+              <div class="drawer-card"><h3>Current issues</h3><div class="review-list">
+                <div class="review-item"><div class="review-dot" style="background: var(--warning);"></div><div><strong>Metro South postcode set</strong><div class="caption">Needs tidy-up before final distance import.</div></div></div>
+                <div class="review-item"><div class="review-dot" style="background: var(--error);"></div><div><strong>2 unit mappings missing</strong><div class="caption">Break pricing cannot publish cleanly until matched.</div></div></div>
+              </div></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="view" id="view-induction" hidden>
+        <div class="page-header">
+          <div><h1>Rating Induction / Import</h1><p>Start from the current spreadsheet download/upload workflow, then add AI-assisted structure matching so tenant pricing can land in the right DFRNT model faster.</p></div>
+          <div class="header-actions"><button class="pill-btn secondary">Download template</button><button class="pill-btn primary">+ New induction run</button></div>
+        </div>
+
+        <div class="split-grid" style="margin-bottom: 14px;">
+          <div class="panel">
+            <div class="panel-header"><div><h3>Upload & intent</h3><p>Let the user explain what the spreadsheet is meant to achieve before AI starts matching structures.</p></div><span class="badge info">Step 1</span></div>
+            <div class="drawer-sections" style="padding:16px;">
+              <div class="drawer-card">
+                <h3>Source files</h3>
+                <div class="fields">
+                  <div class="field full"><div class="label">Workbook upload</div><input class="input" value="Rate Schedule July 2026.xlsx" /></div>
+                  <div><div class="label">Source type</div><select><option>Existing tenant spreadsheet</option></select></div>
+                  <div><div class="label">Import mode</div><select><option>AI-assisted induction</option></select></div>
+                </div>
+              </div>
+              <div class="drawer-card">
+                <h3>Natural language intent</h3>
+                <div class="label">Tell DFRNT what this spreadsheet is intended to do</div>
+                <textarea rows="6">This workbook is the tenant’s current same-day and urgent medical pricing. Most tabs are on-demand courier rates by zone and distance, but there is also an air-freight tab with security and critical surcharges. We want to recreate the current commercial logic as closely as possible inside DFRNT, keeping after-hours and medical handling as reusable charges where possible.</textarea>
+              </div>
+              <div class="drawer-card">
+                <h3>Why ask for intent?</h3>
+                <div class="review-list">
+                  <div class="review-item"><div class="review-dot" style="background: var(--success);"></div><div><strong>Disambiguates hybrid workbooks</strong><div class="body-sm">The user can say whether the goal is on-demand, air, routed, or a mix.</div></div></div>
+                  <div class="review-item"><div class="review-dot" style="background: var(--warning);"></div><div><strong>Preserves commercial intent</strong><div class="body-sm">The spreadsheet headers alone may not explain which bits are primary rates versus extras.</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header"><div><h3>Current-system bridge</h3><p>Keep what already exists instead of pretending induction is a blank-slate feature.</p></div><span class="badge warning">Existing capability</span></div>
+            <div class="component-list" style="padding:16px;">
+              <div class="component-item"><div><h4>Rate download</h4><p>Export current rate structures for editing and audit.</p></div><span class="badge success">Exists today</span></div>
+              <div class="component-item"><div><h4>Rate upload</h4><p>Upload edited rate sheets back into the system.</p></div><span class="badge success">Exists today</span></div>
+              <div class="component-item"><div><h4>AI induction layer</h4><p>Add interpretation, classification and mapping on top of the existing import/export path.</p></div><span class="badge info">New layer</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="split-grid">
+          <div class="panel">
+            <div class="panel-header"><div><h3>AI structure match</h3><p>Best-fit interpretation of the workbook into DFRNT pricing structures.</p></div><span class="badge info">Step 2</span></div>
+            <table>
+              <thead><tr><th>Candidate structure</th><th>Confidence</th><th>Why it matches</th><th>Action</th></tr></thead>
+              <tbody>
+                <tr><td>On-Demand → Zone Rates</td><td><span class="badge success">92%</span></td><td>Repeated from/to geography columns and fixed charge rows across same service groups.</td><td class="linkish">Accept</td></tr>
+                <tr><td>On-Demand → Distance Rates</td><td><span class="badge warning">78%</span></td><td>Base + per-mile pattern detected on one tab with distance bands and mileage charges.</td><td class="linkish">Review</td></tr>
+                <tr><td>Air Freight → Flight Rates</td><td><span class="badge success">88%</span></td><td>Security surcharge, critical surcharge and cargo breakpoint logic detected.</td><td class="linkish">Accept</td></tr>
+                <tr><td>schedule-linked rating behaviour</td><td><span class="badge error">34%</span></td><td>No strong route/leg pattern found; likely not the primary use of this workbook.</td><td class="linkish">Ignore</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header"><div><h3>Mapping & review</h3><p>Make confidence and ambiguity explicit before anything is published.</p></div><span class="badge info">Step 3</span></div>
+            <div class="drawer-sections" style="padding:16px;">
+              <div class="drawer-card">
+                <h3>Entity confidence</h3>
+                <div class="deps">
+                  <div class="dep"><div><strong>Services</strong><span>Express, Priority, Air Critical</span></div><span class="badge success">98% match</span></div>
+                  <div class="dep"><div><strong>Vehicles</strong><span>Car, Van, Truck</span></div><span class="badge warning">71% match</span></div>
+                  <div class="dep"><div><strong>Zones</strong><span>2 names unresolved against tenant geography</span></div><span class="badge error">Needs review</span></div>
+                  <div class="dep"><div><strong>Extra charges</strong><span>After-hours and medical handling inferred from notes</span></div><span class="badge warning">Review</span></div>
+                </div>
+              </div>
+              <div class="drawer-card">
+                <h3>Draft output</h3>
+                <div class="review-list">
+                  <div class="review-item"><div class="review-dot" style="background: var(--success);"></div><div><strong>Draft rate card shell ready</strong><div class="body-sm">Medical Air Priority + Default Auckland Metro proposed.</div></div></div>
+                  <div class="review-item"><div class="review-dot" style="background: var(--warning);"></div><div><strong>5 rows need human review</strong><div class="body-sm">Mixed zone naming and free-text surcharges need confirmation.</div></div></div>
+                  <div class="review-item"><div class="review-dot" style="background: var(--error);"></div><div><strong>No publish without sign-off</strong><div class="body-sm">Induction creates drafts; it should not silently activate pricing.</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel" style="margin-top: 14px;">
+          <div class="panel-header"><div><h3>Row-level mapping review</h3><p>Show exactly how source rows will be translated before the user accepts the draft build.</p></div><span class="badge info">Step 4</span></div>
+          <table>
+            <thead><tr><th>Source</th><th>Detected meaning</th><th>Matched DFRNT target</th><th>Confidence</th><th>Issue</th><th>Action</th></tr></thead>
+            <tbody>
+              <tr><td class="mono">Sheet: Metro Zone / Row 18</td><td>CBD → Inner East fixed courier rate</td><td>On-Demand → Zone Rate</td><td><span class="badge success">95%</span></td><td><span class="badge success">None</span></td><td class="linkish">Accept</td></tr>
+              <tr><td class="mono">Sheet: Distance Rates / Row 9</td><td>Base + mileage band</td><td>On-Demand → Distance Rate</td><td><span class="badge warning">76%</span></td><td><span class="badge warning">Vehicle unclear</span></td><td class="linkish">Remap</td></tr>
+              <tr><td class="mono">Sheet: Air Tab / Row 22</td><td>Critical flight surcharge with cargo breakpoint</td><td>Air Freight → Flight Rate</td><td><span class="badge success">89%</span></td><td><span class="badge success">None</span></td><td class="linkish">Accept</td></tr>
+              <tr><td class="mono">Sheet: Notes / Row 3</td><td>After-hours handling note</td><td>Charges & Accessorials → Extra Charge</td><td><span class="badge warning">61%</span></td><td><span class="badge error">Free-text only</span></td><td class="linkish">Review</td></tr>
+              <tr><td class="mono">Sheet: Regional / Row 41</td><td>Possible scheduled lane price</td><td>schedule-linked rating behaviour</td><td><span class="badge error">38%</span></td><td><span class="badge error">Insufficient structure</span></td><td class="linkish">Ignore</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="split-grid" style="margin-top: 14px;">
+          <div class="panel">
+            <div class="panel-header"><div><h3>Exceptions & unresolved items</h3><p>Surface what AI could not safely decide so the operator can clean it up deliberately.</p></div><span class="badge warning">Step 5</span></div>
+            <div class="drawer-sections" style="padding:16px;">
+              <div class="drawer-card">
+                <h3>Needs manual resolution</h3>
+                <div class="review-list">
+                  <div class="review-item"><div class="review-dot" style="background: var(--error);"></div><div><strong>Zone name mismatch</strong><div class="body-sm">“South East Industrial” does not match any current tenant zone dictionary entry.</div></div></div>
+                  <div class="review-item"><div class="review-dot" style="background: var(--warning);"></div><div><strong>Vehicle alias conflict</strong><div class="body-sm">Workbook uses both “1T Van” and “Small Van” for what may be the same vehicle class.</div></div></div>
+                  <div class="review-item"><div class="review-dot" style="background: var(--warning);"></div><div><strong>Free-text accessorial note</strong><div class="body-sm">“Call out fee applies after 8pm” should probably become a reusable extra charge.</div></div></div>
+                </div>
+              </div>
+              <div class="drawer-card">
+                <h3>Operator tools</h3>
+                <div class="deps">
+                  <div class="dep"><div><strong>Create alias</strong><span>Map old spreadsheet terms to DFRNT standard labels</span></div><span class="badge info">Fast fix</span></div>
+                  <div class="dep"><div><strong>Exclude row</strong><span>Hold an ambiguous row out of the draft build</span></div><span class="badge warning">Safe</span></div>
+                  <div class="dep"><div><strong>Force target structure</strong><span>Override AI and place a row into a different DFRNT model</span></div><span class="badge error">Advanced</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header"><div><h3>Draft output & publish readiness</h3><p>Show whether the draft is safe to save, ready for review, or publishable.</p></div><span class="badge info">Step 6</span></div>
+            <div class="drawer-sections" style="padding:16px;">
+              <div class="drawer-card">
+                <h3>Draft package summary</h3>
+                <div class="deps">
+                  <div class="dep"><div><strong>Draft rate cards</strong><span>2 proposed</span></div><span class="badge success">Ready</span></div>
+                  <div class="dep"><div><strong>Draft zone rates</strong><span>48 rows</span></div><span class="badge success">Ready</span></div>
+                  <div class="dep"><div><strong>Draft distance rates</strong><span>16 rows</span></div><span class="badge warning">Vehicle review needed</span></div>
+                  <div class="dep"><div><strong>Draft extra charges</strong><span>3 inferred</span></div><span class="badge warning">Review first</span></div>
+                </div>
+              </div>
+              <div class="drawer-card">
+                <h3>Publish gate</h3>
+                <div class="review-list">
+                  <div class="review-item"><div class="review-dot" style="background: var(--success);"></div><div><strong>Safe to save draft</strong><div class="body-sm">All interpreted rows can be stored with traceability back to workbook and sheet.</div></div></div>
+                  <div class="review-item"><div class="review-dot" style="background: var(--warning);"></div><div><strong>Not yet ready to publish</strong><div class="body-sm">5 unresolved rows and 2 support-data mismatches still require operator decisions.</div></div></div>
+                  <div class="review-item"><div class="review-dot" style="background: var(--error);"></div><div><strong>Activation lock remains</strong><div class="body-sm">Publishing stays disabled until unresolved items drop below the configured threshold or are explicitly waived.</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel" style="margin-top: 14px;">
+          <div class="panel-header"><div><h3>Source vs generated output</h3><p>Make the interpretation defensible by showing the source workbook meaning beside the draft DFRNT structures it will create.</p></div><span class="badge info">Step 7</span></div>
+          <div class="split-grid" style="padding:16px;">
+            <div class="drawer-card">
+              <h3>Source workbook view</h3>
+              <table>
+                <thead><tr><th>Sheet / Row</th><th>Source values</th><th>Interpretation notes</th></tr></thead>
+                <tbody>
+                  <tr><td class="mono">Metro Zone / 18</td><td>From: CBD · To: Inner East · Rate: 18.00 · Service: Same Day</td><td>Clear zone pair row with no surcharge ambiguity.</td></tr>
+                  <tr><td class="mono">Distance Rates / 9</td><td>Base: 14.00 · Incl: 5mi · Per mile: 1.85 · Vehicle: Small Van</td><td>Likely distance structure, but vehicle naming needs alias confirmation.</td></tr>
+                  <tr><td class="mono">Air Tab / 22</td><td>Base: 48.00 · Security: 6.50 · Critical: 18.00 · Break: 10kg</td><td>Flight-rate pattern with explicit cargo breakpoint.</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="drawer-card">
+              <h3>Generated DFRNT draft</h3>
+              <table>
+                <thead><tr><th>Draft entity</th><th>Result</th><th>Status</th></tr></thead>
+                <tbody>
+                  <tr><td>Zone Rate</td><td>Default Auckland Metro → CBD to Inner East → $18.00</td><td><span class="badge success">Ready</span></td></tr>
+                  <tr><td>Distance Rate</td><td>Draft band 0–5mi → base $14.00 → $1.85 per mile</td><td><span class="badge warning">Vehicle alias check</span></td></tr>
+                  <tr><td>Flight Rate</td><td>Medical Air Priority → base + security + critical + 10kg break</td><td><span class="badge success">Ready</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="split-grid" style="margin-top: 14px;">
+          <div class="panel">
+            <div class="panel-header"><div><h3>Alias / remap workflow</h3><p>Give the operator a fast way to normalise spreadsheet language into tenant-standard DFRNT entities.</p></div><span class="badge info">Operator tool</span></div>
+            <div class="drawer-sections" style="padding:16px;">
+              <div class="drawer-card">
+                <h3>Current remap action</h3>
+                <div class="fields">
+                  <div><div class="label">Source label</div><input class="input" value="Small Van" /></div>
+                  <div><div class="label">Detected type</div><input class="input" value="Vehicle alias" /></div>
+                  <div><div class="label">Map to existing</div><select><option>Van</option></select></div>
+                  <div><div class="label">Action</div><select><option>Create tenant alias</option></select></div>
+                  <div class="field full"><div class="label">Reason</div><textarea rows="3">Spreadsheet uses 'Small Van' but current DFRNT vehicle class is simply 'Van'. Apply this alias for this tenant on future induction runs.</textarea></div>
+                </div>
+              </div>
+              <div class="drawer-card">
+                <h3>Expected outcome</h3>
+                <div class="review-list">
+                  <div class="review-item"><div class="review-dot" style="background: var(--success);"></div><div><strong>Future rows auto-normalise</strong><div class="body-sm">The same source label will map cleanly next time.</div></div></div>
+                  <div class="review-item"><div class="review-dot" style="background: var(--info, var(--c-cyan));"></div><div><strong>Audit kept</strong><div class="body-sm">The alias decision is stored against the induction run and tenant support data.</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header"><div><h3>Induction run history & audit</h3><p>Track what was uploaded, what AI decided, what the operator overrode, and what finally got published.</p></div><span class="badge info">Audit trail</span></div>
+            <table>
+              <thead><tr><th>Run</th><th>Workbook</th><th>Result</th><th>Overrides</th><th>Published by</th><th>Action</th></tr></thead>
+              <tbody>
+                <tr><td class="mono">RUN-2026-07-04-003</td><td>Rate Schedule July 2026.xlsx</td><td><span class="badge warning">Draft saved</span></td><td>3 aliases · 2 exclusions</td><td>—</td><td class="linkish">Open</td></tr>
+                <tr><td class="mono">RUN-2026-07-02-011</td><td>Metro Courier Rates Q3.xlsx</td><td><span class="badge success">Published</span></td><td>1 alias</td><td>Steve</td><td class="linkish">Audit</td></tr>
+                <tr><td class="mono">RUN-2026-06-26-004</td><td>Air Pricing Legacy.xls</td><td><span class="badge error">Abandoned</span></td><td>7 unresolved rows</td><td>—</td><td class="linkish">Review</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="split-grid" style="margin-top: 14px;">
+          <div class="panel">
+            <div class="panel-header"><div><h3>Final review & publish workflow</h3><p>Turn the inducted draft into a controlled commercial release with reviewer sign-off, version naming and activation rules.</p></div><span class="badge info">Final stage</span></div>
+            <div class="drawer-sections" style="padding:16px;">
+              <div class="drawer-card">
+                <h3>Release setup</h3>
+                <div class="fields">
+                  <div><div class="label">Draft version name</div><input class="input" value="Auckland Metro + Medical Air Import v1" /></div>
+                  <div><div class="label">Release mode</div><select><option>Review then activate</option></select></div>
+                  <div><div class="label">Effective start</div><input class="input" value="2026-07-08" /></div>
+                  <div><div class="label">Effective end</div><input class="input" value="Open" /></div>
+                  <div><div class="label">Supersede existing card</div><select><option>Yes — archive current active version</option></select></div>
+                  <div><div class="label">Rollback window</div><select><option>24 hours</option></select></div>
+                  <div class="field full"><div class="label">Release note</div><textarea rows="3">Imported tenant workbook into new DFRNT structures. Zone and air pricing matched automatically; 5 ambiguous rows excluded pending manual review.</textarea></div>
+                </div>
+              </div>
+              <div class="drawer-card">
+                <h3>Reviewer summary</h3>
+                <div class="deps">
+                  <div class="dep"><div><strong>Primary reviewer</strong><span>Kerran</span></div><span class="badge success">Assigned</span></div>
+                  <div class="dep"><div><strong>Business owner</strong><span>Steve</span></div><span class="badge warning">Approval needed</span></div>
+                  <div class="dep"><div><strong>Support-data dependencies</strong><span>2 zone aliases and 1 vehicle alias resolved</span></div><span class="badge success">Complete</span></div>
+                  <div class="dep"><div><strong>Residual exceptions</strong><span>2 excluded rows remain outside this release</span></div><span class="badge warning">Tracked</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header"><div><h3>Activation, supersede & rollback</h3><p>Make pricing activation explicit and reversible so induction never feels dangerous.</p></div><span class="badge info">Release controls</span></div>
+            <div class="drawer-sections" style="padding:16px;">
+              <div class="drawer-card">
+                <h3>Activation plan</h3>
+                <div class="review-list">
+                  <div class="review-item"><div class="review-dot" style="background: var(--success);"></div><div><strong>Draft can move to review</strong><div class="body-sm">No blocking dependency remains for the accepted rows.</div></div></div>
+                  <div class="review-item"><div class="review-dot" style="background: var(--warning);"></div><div><strong>Supersede current live version</strong><div class="body-sm">Current active Auckland Metro card will be archived, not deleted.</div></div></div>
+                  <div class="review-item"><div class="review-dot" style="background: var(--warning);"></div><div><strong>Excluded rows remain outside publish</strong><div class="body-sm">They are logged and carried as follow-up work, not silently dropped.</div></div></div>
+                </div>
+              </div>
+              <div class="drawer-card">
+                <h3>Rollback / recovery</h3>
+                <div class="review-list">
+                  <div class="review-item"><div class="review-dot" style="background: var(--success);"></div><div><strong>Rollback target stored</strong><div class="body-sm">Previous live rate-card version remains selectable as the instant restore point.</div></div></div>
+                  <div class="review-item"><div class="review-dot" style="background: var(--warning);"></div><div><strong>Change audit captured</strong><div class="body-sm">Every induced row, alias and operator override is retained against this release.</div></div></div>
+                  <div class="review-item"><div class="review-dot" style="background: var(--error);"></div><div><strong>Publish locked until sign-off</strong><div class="body-sm">Activation button stays disabled until reviewer + business owner approvals are both present.</div></div></div>
+                </div>
+              </div>
+              <div class="drawer-card">
+                <h3>Final actions</h3>
+                <div class="header-actions" style="justify-content:flex-start; gap:10px;">
+                  <button class="pill-btn secondary">Save review pack</button>
+                  <button class="pill-btn ghost">Request approval</button>
+                  <button class="pill-btn primary">Publish when approved</button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
     </main>
@@ -456,10 +1049,10 @@
         <div class="drawer-sections" id="drawerContent"></div>
 
         <div class="drawer-actions">
-          <button class="pill-btn secondary">Save draft</button>
+          <button class="pill-btn secondary" id="drawerSecondaryAction">Save draft</button>
           <div class="right">
-            <button class="pill-btn ghost">Back</button>
-            <button class="pill-btn primary">Next step</button>
+            <button class="pill-btn ghost" id="drawerGhostAction">Back</button>
+            <button class="pill-btn primary" id="drawerPrimaryAction">Next step</button>
           </div>
         </div>
       </div>
@@ -470,23 +1063,25 @@
     const ondemandZoneTable = `
       <thead><tr><th>Name</th><th>Client</th><th>Rate Card</th><th>Service</th><th>Vehicle</th><th>From Zone</th><th>To Zone</th><th>Rate</th><th>Driver</th><th>Fuel</th><th>Extra Charge</th></tr></thead>
       <tbody>
-        <tr><td class="linkish">AKL Central Same Day</td><td>OTG Cargo</td><td>Default Auckland Metro</td><td>Same Day</td><td>Van</td><td>CBD</td><td>Inner East</td><td>$18.00</td><td>$7.20</td><td>Yes</td><td>After-hours surcharge</td></tr>
-        <tr><td class="linkish">North Shore Priority</td><td>OTG Cargo</td><td>Default Auckland Metro</td><td>Priority</td><td>Car</td><td>North Shore</td><td>CBD</td><td>$22.00</td><td>$8.50</td><td>Yes</td><td>Critical uplift</td></tr>
-        <tr><td class="linkish">Airport to Manukau</td><td>Zimmer Biomet NZ</td><td>Medical Air Priority</td><td>Express</td><td>Van</td><td>Airport</td><td>South East</td><td>$24.50</td><td>$9.00</td><td>No</td><td>Medical Handling Bundle</td></tr>
+        <tr><td class="linkish" data-open-drawer="zoneDetail">AKL Central Same Day</td><td>OTG Cargo</td><td>Default Auckland Metro</td><td>Same Day</td><td>Van</td><td>CBD</td><td>Inner East</td><td>$18.00</td><td>$7.20</td><td>Yes</td><td>After-hours surcharge</td></tr>
+        <tr><td class="linkish" data-open-drawer="zoneDetail">North Shore Priority</td><td>OTG Cargo</td><td>Default Auckland Metro</td><td>Priority</td><td>Car</td><td>North Shore</td><td>CBD</td><td>$22.00</td><td>$8.50</td><td>Yes</td><td>Critical uplift</td></tr>
+        <tr><td class="linkish" data-open-drawer="zoneDetail">Airport to Manukau</td><td>Zimmer Biomet NZ</td><td>Medical Air Priority</td><td>Express</td><td>Van</td><td>Airport</td><td>South East</td><td>$24.50</td><td>$9.00</td><td>No</td><td>Medical Handling Bundle</td></tr>
       </tbody>`;
 
     const ondemandDistanceTable = `
       <thead><tr><th>Name</th><th>Client</th><th>Rate Card</th><th>Service</th><th>Vehicle</th><th>Incl. Dist</th><th>Base</th><th>Driver Base</th><th>Per Mile</th><th>Driver / Mile</th><th>Fuel</th></tr></thead>
       <tbody>
-        <tr><td class="linkish">Metro Express 0–15mi</td><td>OTG Cargo</td><td>Default Auckland Metro</td><td>Express</td><td>Van</td><td>5</td><td>$14.00</td><td>$6.00</td><td>$1.85</td><td>$0.68</td><td>Base + Distance</td></tr>
-        <tr><td class="linkish">Urgent Med 0–30mi</td><td>Zimmer Biomet NZ</td><td>Medical Air Priority</td><td>Critical</td><td>Car</td><td>3</td><td>$16.50</td><td>$6.90</td><td>$2.20</td><td>$0.82</td><td>Distance only</td></tr>
-        <tr><td class="linkish">Outer Metro 15–50mi</td><td>OTG Cargo</td><td>Default Auckland Metro</td><td>Same Day</td><td>Truck</td><td>8</td><td>$22.00</td><td>$9.40</td><td>$2.95</td><td>$1.08</td><td>Base + Distance</td></tr>
+        <tr><td class="linkish" data-open-drawer="zoneDetail">Metro Express 0–15mi</td><td>OTG Cargo</td><td>Default Auckland Metro</td><td>Express</td><td>Van</td><td>5</td><td>$14.00</td><td>$6.00</td><td>$1.85</td><td>$0.68</td><td>Base + Distance</td></tr>
+        <tr><td class="linkish" data-open-drawer="zoneDetail">Urgent Med 0–30mi</td><td>Zimmer Biomet NZ</td><td>Medical Air Priority</td><td>Critical</td><td>Car</td><td>3</td><td>$16.50</td><td>$6.90</td><td>$2.20</td><td>$0.82</td><td>Distance only</td></tr>
+        <tr><td class="linkish" data-open-drawer="zoneDetail">Outer Metro 15–50mi</td><td>OTG Cargo</td><td>Default Auckland Metro</td><td>Same Day</td><td>Truck</td><td>8</td><td>$22.00</td><td>$9.40</td><td>$2.95</td><td>$1.08</td><td>Base + Distance</td></tr>
       </tbody>`;
 
     const drawerTemplates = {
       zone: {
         title: 'New Zone Rate',
         subtitle: 'Build zone-to-zone on-demand pricing with linked components and review checks.',
+        stepper: true,
+        actions: { secondary: 'Save draft', ghost: 'Back', primary: 'Next step' },
         html: `
           <div class="drawer-card">
             <h3>Scope</h3>
@@ -527,9 +1122,54 @@
             </div>
           </div>`
       },
+      zoneDetail: {
+        title: 'AKL Central Same Day',
+        subtitle: 'Read-only detail drawer keeps the commercial shape, linked components and release state visible before you decide to edit.',
+        stepper: false,
+        actions: { secondary: 'Duplicate', ghost: 'Close', primary: 'Edit in drawer' },
+        html: `
+          <div class="drawer-card">
+            <h3>Commercial summary</h3>
+            <div class="deps">
+              <div class="dep"><div><strong>Client</strong><span>OTG Cargo</span></div><span class="badge info">Same Day</span></div>
+              <div class="dep"><div><strong>Rate card</strong><span>Default Auckland Metro</span></div><span class="badge success">Active</span></div>
+              <div class="dep"><div><strong>Method</strong><span>Zone → Zone</span></div><span class="badge success">On-demand</span></div>
+              <div class="dep"><div><strong>Effective dates</strong><span>01 Jul 2026 → Open</span></div><span class="badge warning">Reviewable</span></div>
+            </div>
+          </div>
+          <div class="drawer-card">
+            <h3>Pricing detail</h3>
+            <div class="fields">
+              <div><div class="label">From zone</div><input class="input" value="CBD" readonly /></div>
+              <div><div class="label">To zone</div><input class="input" value="Inner East" readonly /></div>
+              <div><div class="label">Charge rate</div><input class="input" value="$18.00" readonly /></div>
+              <div><div class="label">Driver rate</div><input class="input" value="$7.20" readonly /></div>
+              <div><div class="label">Fuel behaviour</div><input class="input" value="Base + surcharge" readonly /></div>
+              <div><div class="label">Release note</div><input class="input" value="Current live metro baseline" readonly /></div>
+            </div>
+          </div>
+          <div class="drawer-card">
+            <h3>Linked components</h3>
+            <div class="deps">
+              <div class="dep"><div><strong>Extra charge</strong><span>After-hours surcharge</span></div><span class="badge success">Connected</span></div>
+              <div class="dep"><div><strong>Accessorial group</strong><span>Medical Handling Bundle</span></div><span class="badge warning">Optional</span></div>
+              <div class="dep"><div><strong>Zone health</strong><span>CBD and Inner East both mapped to the active metro set</span></div><span class="badge success">Healthy</span></div>
+              <div class="dep"><div><strong>Overlap warning</strong><span>2 seasonal variants exist on other date windows</span></div><span class="badge warning">Needs eyes</span></div>
+            </div>
+          </div>
+          <div class="drawer-card">
+            <h3>Why this helps</h3>
+            <div class="review-list">
+              <div class="review-item"><div class="review-dot" style="background: var(--success);"></div><div><strong>Missing detail is visible without committing to edit</strong><div class="body-sm">Operators can inspect the real commercial shape before opening a form state.</div></div></div>
+              <div class="review-item"><div class="review-dot" style="background: var(--warning);"></div><div><strong>Edit is a separate intent</strong><div class="body-sm">Prevents accidental state changes when someone only wants to review pricing context.</div></div></div>
+            </div>
+          </div>`
+      },
       flight: {
         title: 'New Flight Rate',
         subtitle: 'Air-freight setup with explicit break pricing and unit dependencies surfaced inline.',
+        stepper: true,
+        actions: { secondary: 'Save draft', ghost: 'Back', primary: 'Next step' },
         html: `
           <div class="drawer-card">
             <h3>Scope</h3>
@@ -571,6 +1211,85 @@
               <div class="review-item"><div class="review-dot" style="background: var(--warning);"></div><div><strong>Consider templating</strong><div class="body-sm">Security surcharge matches 5 other rates and may be a candidate for reuse later.</div></div></div>
             </div>
           </div>`
+      },
+      scheduledSummary: {
+        title: 'Medical North Island Shuttle',
+        subtitle: 'Scheduled template summary stays light in the drawer, with a clear handoff into Dane’s full builder when route logic needs deeper editing.',
+        stepper: false,
+        actions: { secondary: 'Clone template', ghost: 'Close', primary: 'Edit summary' },
+        html: `
+          <div class="drawer-card">
+            <h3>Template summary</h3>
+            <div class="deps">
+              <div class="dep"><div><strong>Client</strong><span>Zimmer Biomet NZ</span></div><span class="badge success">Live</span></div>
+              <div class="dep"><div><strong>Template type</strong><span>Routed / Multi-leg</span></div><span class="badge info">3 legs</span></div>
+              <div class="dep"><div><strong>Pricing basis</strong><span>Pickup + linehaul + delivery</span></div><span class="badge success">Structured</span></div>
+              <div class="dep"><div><strong>Active schedules</strong><span>Weekday shuttle + urgent Saturday variant</span></div><span class="badge warning">2 attached</span></div>
+            </div>
+          </div>
+          <div class="drawer-card">
+            <h3>Commercial shape</h3>
+            <div class="fields">
+              <div><div class="label">Pickup leg</div><input class="input" value="Auckland hospital pickups" readonly /></div>
+              <div><div class="label">Linehaul leg</div><input class="input" value="AKL → WLG overnight linehaul" readonly /></div>
+              <div><div class="label">Delivery leg</div><input class="input" value="Wellington metro med delivery" readonly /></div>
+              <div><div class="label">Linked extras</div><input class="input" value="After-hours + medical handling" readonly /></div>
+              <div><div class="label">Effective dates</div><input class="input" value="01 Mar 2026 → Open" readonly /></div>
+              <div><div class="label">Release note</div><input class="input" value="North Island routed medical baseline" readonly /></div>
+            </div>
+          </div>
+          <div class="drawer-card">
+            <h3>Builder handoff</h3>
+            <div class="deps">
+              <div class="dep"><div><strong>Drawer coverage</strong><span>Release state, dates, dependencies, light edits</span></div><span class="badge success">Good here</span></div>
+              <div class="dep"><div><strong>Dane’s full builder</strong><span>Leg logic, stop order, route clusters, per-stop pricing and windows</span></div><span class="badge warning">Escalate when needed</span></div>
+              <div class="dep"><div><strong>Handoff state</strong><span id="handoffStateLabel">Ready to hand off with full context pack</span></div><span class="badge info" id="handoffStateBadge">Ready</span></div>
+            </div>
+            <div class="header-actions" style="justify-content:flex-start; margin-top:12px; gap:10px;">
+              <button class="pill-btn secondary" data-handoff-trigger="scheduled">Open Dane's full builder</button>
+              <button class="pill-btn ghost" data-open-drawer="scheduledEdit">Edit summary first</button>
+            </div>
+          </div>`
+      },
+      scheduledEdit: {
+        title: 'Edit Scheduled Template',
+        subtitle: 'Use the drawer for summary-level edits and dependency cleanup, then hand off cleanly into Dane’s richer builder when route composition gets heavy.',
+        stepper: true,
+        actions: { secondary: 'Save draft', ghost: 'Back to summary', primary: 'Open Dane\'s full builder' },
+        html: `
+          <div class="drawer-card">
+            <h3>Scope</h3>
+            <div class="fields">
+              <div><div class="label">Template name</div><input class="input" value="Medical North Island Shuttle" /></div>
+              <div><div class="label">Client</div><select><option>Zimmer Biomet NZ</option></select></div>
+              <div><div class="label">Template type</div><select><option>Routed / Multi-leg</option></select></div>
+              <div><div class="label">Status</div><select><option>Live</option><option>Draft</option></select></div>
+            </div>
+          </div>
+          <div class="drawer-card">
+            <h3>Summary controls</h3>
+            <div class="fields">
+              <div><div class="label">Pricing basis</div><input class="input" value="Pickup + linehaul + delivery" /></div>
+              <div><div class="label">Effective from</div><input class="input" value="01 Mar 2026" /></div>
+              <div><div class="label">Effective to</div><input class="input" value="Open" /></div>
+              <div class="field full"><div class="label">Release note</div><textarea rows="3">Adjusted Saturday urgent handling and confirmed all linked extras before handoff into the full builder.</textarea></div>
+            </div>
+          </div>
+          <div class="drawer-card">
+            <h3>Linked components</h3>
+            <div class="deps">
+              <div class="dep"><div><strong>Extra charges</strong><span>After-hours surcharge, medical handling</span></div><span class="badge success">Connected</span></div>
+              <div class="dep"><div><strong>Schedule links</strong><span>2 active schedules use this template</span></div><span class="badge success">Tracked</span></div>
+              <div class="dep"><div><strong>Route logic coverage</strong><span>Leg order and service windows still belong to Dane’s builder</span></div><span class="badge warning">Handoff required</span></div>
+            </div>
+          </div>
+          <div class="drawer-card">
+            <h3>Handoff readiness</h3>
+            <div class="review-list">
+              <div class="review-item"><div class="review-dot" style="background: var(--success);"></div><div><strong>Commercial context captured</strong><div class="body-sm">Name, release state, dates and notes can be finalised here first.</div></div></div>
+              <div class="review-item"><div class="review-dot" style="background: var(--warning);"></div><div><strong>Route build still escalates</strong><div class="body-sm">Once the summary is clean, use the explicit handoff button to continue in Dane’s builder.</div></div></div>
+            </div>
+          </div>`
       }
     };
 
@@ -583,6 +1302,11 @@
     const drawerSubtitle = document.getElementById('drawerSubtitle');
     const ondemandSub = document.getElementById('ondemandSub');
     const ondemandTable = document.getElementById('ondemandTable');
+    const stepper = document.getElementById('stepper');
+    const drawerSecondaryAction = document.getElementById('drawerSecondaryAction');
+    const drawerGhostAction = document.getElementById('drawerGhostAction');
+    const drawerPrimaryAction = document.getElementById('drawerPrimaryAction');
+    let activeDrawerType = 'zone';
 
     function setView(name) {
       views.forEach(v => v.hidden = v.id !== 'view-' + name);
@@ -591,13 +1315,33 @@
 
     function openDrawer(type) {
       const cfg = drawerTemplates[type] || drawerTemplates.zone;
+      activeDrawerType = type;
       drawerTitle.textContent = cfg.title;
       drawerSubtitle.textContent = cfg.subtitle;
       drawerContent.innerHTML = cfg.html;
+      stepper.style.display = cfg.stepper === false ? 'none' : 'grid';
+      drawerSecondaryAction.textContent = cfg.actions?.secondary || 'Save draft';
+      drawerGhostAction.textContent = cfg.actions?.ghost || 'Back';
+      drawerPrimaryAction.textContent = cfg.actions?.primary || 'Next step';
       app.classList.add('drawer-open');
     }
 
     function closeDrawer() { app.classList.remove('drawer-open'); }
+
+    function triggerHandoff(scope = 'scheduled') {
+      const badge = document.getElementById('handoffStateBadge');
+      const label = document.getElementById('handoffStateLabel');
+      if (badge) {
+        badge.textContent = 'Handed off';
+        badge.className = 'badge success';
+      }
+      if (label) {
+        label.textContent = "Context packed and sent into Dane's full builder for route-level editing";
+      }
+      if (scope === 'scheduled') {
+        openDrawer('scheduledSummary');
+      }
+    }
 
     ondemandSub.addEventListener('change', () => {
       ondemandTable.innerHTML = ondemandSub.value === 'distance' ? ondemandDistanceTable : ondemandZoneTable;
@@ -611,6 +1355,27 @@
     document.querySelectorAll('[data-view-jump]').forEach(el => el.addEventListener('click', () => setView(el.dataset.viewJump)));
     document.querySelectorAll('.open-zone-drawer, #newRateBtn').forEach(el => el.addEventListener('click', () => openDrawer('zone')));
     document.querySelectorAll('.open-flight-drawer').forEach(el => el.addEventListener('click', () => openDrawer('flight')));
+    document.addEventListener('click', (event) => {
+      const drawerTrigger = event.target.closest('[data-open-drawer]');
+      if (drawerTrigger) {
+        openDrawer(drawerTrigger.dataset.openDrawer);
+        return;
+      }
+
+      const handoffTrigger = event.target.closest('[data-handoff-trigger]');
+      if (handoffTrigger) {
+        triggerHandoff(handoffTrigger.dataset.handoffTrigger);
+      }
+    });
+    drawerPrimaryAction.addEventListener('click', () => {
+      if (activeDrawerType === 'zoneDetail') return openDrawer('zone');
+      if (activeDrawerType === 'scheduledSummary') return openDrawer('scheduledEdit');
+      if (activeDrawerType === 'scheduledEdit') return triggerHandoff('scheduled');
+    });
+    drawerGhostAction.addEventListener('click', () => {
+      if (activeDrawerType === 'scheduledEdit') return openDrawer('scheduledSummary');
+      closeDrawer();
+    });
     document.getElementById('closeDrawer').addEventListener('click', closeDrawer);
   </script>
 </body>
