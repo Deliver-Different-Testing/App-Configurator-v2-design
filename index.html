@@ -510,9 +510,9 @@ body { margin: 0; font-size: var(--text-md); line-height: var(--lh-norm); -webki
           <table>
             <thead><tr><th>Name</th><th>Client</th><th>Scope</th><th>Uplift</th><th>Dates</th><th>History</th><th>Active</th></tr></thead>
             <tbody>
-              <tr><td class="linkish">Default Auckland Metro</td><td>OTG Cargo</td><td>All same-day courier</td><td>+4% charge / +2% driver</td><td>01 Jul 2026 → Open</td><td>6 versions</td><td><span class="badge success">Active</span></td></tr>
-              <tr><td class="linkish">Medical Air Priority</td><td>Zimmer Biomet NZ</td><td>Flight + critical</td><td>+ $4.50 security</td><td>01 Jan 2026 → Open</td><td>3 versions</td><td><span class="badge success">Active</span></td></tr>
-              <tr><td class="linkish">Bulk South DC Winter</td><td>Woop</td><td>Bulk distribution</td><td>+5% charge</td><td>01 Jun 2026 → 31 Aug 2026</td><td>2 versions</td><td><span class="badge warning">Seasonal</span></td></tr>
+              <tr><td class="linkish" data-open-drawer="rateCardDetail">Default Auckland Metro</td><td>OTG Cargo</td><td>All same-day courier</td><td>+4% charge / +2% driver</td><td>01 Jul 2026 → Open</td><td>6 versions</td><td><span class="badge success">Active</span></td></tr>
+              <tr><td class="linkish" data-open-drawer="rateCardDetail">Medical Air Priority</td><td>Zimmer Biomet NZ</td><td>Flight + critical</td><td>+ $4.50 security</td><td>01 Jan 2026 → Open</td><td>3 versions</td><td><span class="badge success">Active</span></td></tr>
+              <tr><td class="linkish" data-open-drawer="rateCardDetail">Bulk South DC Winter</td><td>Woop</td><td>Bulk distribution</td><td>+5% charge</td><td>01 Jun 2026 → 31 Aug 2026</td><td>2 versions</td><td><span class="badge warning">Seasonal</span></td></tr>
             </tbody>
           </table>
         </div>
@@ -1165,6 +1165,73 @@ body { margin: 0; font-size: var(--text-md); line-height: var(--lh-norm); -webki
             </div>
           </div>`
       },
+      rateCardDetail: {
+        title: 'Default Auckland Metro',
+        subtitle: 'Read-only rate-card drawer shows scope, pricing posture, linked rate families and release state before you switch into edit mode.',
+        stepper: false,
+        actions: { secondary: 'Duplicate card', ghost: 'Close', primary: 'Edit rate card' },
+        html: `
+          <div class="drawer-card">
+            <h3>Rate card summary</h3>
+            <div class="deps">
+              <div class="dep"><div><strong>Client</strong><span>OTG Cargo</span></div><span class="badge success">Active</span></div>
+              <div class="dep"><div><strong>Commercial scope</strong><span>All same-day courier pricing</span></div><span class="badge info">Primary card</span></div>
+              <div class="dep"><div><strong>Effective dates</strong><span>01 Jul 2026 → Open</span></div><span class="badge success">Live</span></div>
+              <div class="dep"><div><strong>Versions</strong><span>6 versions with 1 draft successor</span></div><span class="badge warning">Governed</span></div>
+            </div>
+          </div>
+          <div class="drawer-card">
+            <h3>Coverage and linked pricing</h3>
+            <div class="deps">
+              <div class="dep"><div><strong>On-demand</strong><span>126 zone rates · 122 distance rates</span></div><span class="badge success">Connected</span></div>
+              <div class="dep"><div><strong>Charges</strong><span>After-hours surcharge, critical uplift</span></div><span class="badge success">Connected</span></div>
+              <div class="dep"><div><strong>Territory set</strong><span>Auckland Metro zones</span></div><span class="badge success">Healthy</span></div>
+              <div class="dep"><div><strong>Overlap warnings</strong><span>2 seasonal variants overlap on future dates</span></div><span class="badge warning">Review</span></div>
+            </div>
+          </div>
+          <div class="drawer-card">
+            <h3>Commercial posture</h3>
+            <div class="fields">
+              <div><div class="label">Fuel policy</div><input class="input" value="+4% charge / +2% driver" readonly /></div>
+              <div><div class="label">Owner</div><input class="input" value="Business pricing team" readonly /></div>
+              <div><div class="label">Last release</div><input class="input" value="Metro baseline refresh — Jul 2026" readonly /></div>
+              <div><div class="label">Next action</div><input class="input" value="Review draft successor before spring changes" readonly /></div>
+            </div>
+          </div>`
+      },
+      rateCardEdit: {
+        title: 'Edit Rate Card',
+        subtitle: 'Edit the rate-card state in the drawer for normal commercial changes, without dropping straight into deeper rate maintenance.',
+        stepper: true,
+        actions: { secondary: 'Save draft', ghost: 'Back to detail', primary: 'Next step' },
+        html: `
+          <div class="drawer-card">
+            <h3>Scope</h3>
+            <div class="fields">
+              <div><div class="label">Rate card name</div><input class="input" value="Default Auckland Metro" /></div>
+              <div><div class="label">Client</div><select><option>OTG Cargo</option></select></div>
+              <div><div class="label">Status</div><select><option>Active</option><option>Draft</option><option>Archived</option></select></div>
+              <div><div class="label">Owner</div><input class="input" value="Business pricing team" /></div>
+            </div>
+          </div>
+          <div class="drawer-card">
+            <h3>Pricing posture</h3>
+            <div class="fields">
+              <div><div class="label">Charge fuel overlay</div><input class="input" value="4%" /></div>
+              <div><div class="label">Driver fuel overlay</div><input class="input" value="2%" /></div>
+              <div><div class="label">Effective from</div><input class="input" value="01 Jul 2026" /></div>
+              <div><div class="label">Effective to</div><input class="input" value="Open" /></div>
+              <div class="field full"><div class="label">Release note</div><textarea rows="3">Refine the commercial wrapper and release state here before touching individual rates.</textarea></div>
+            </div>
+          </div>
+          <div class="drawer-card">
+            <h3>Linked components</h3>
+            <div class="deps">
+              <div class="dep"><div><strong>Zone + distance rates</strong><span>248 linked rows inherit this commercial wrapper</span></div><span class="badge success">Connected</span></div>
+              <div class="dep"><div><strong>Seasonal successor</strong><span>Spring draft exists and needs date cleanup</span></div><span class="badge warning">Review</span></div>
+            </div>
+          </div>`
+      },
       flight: {
         title: 'New Flight Rate',
         subtitle: 'Air-freight setup with explicit break pricing and unit dependencies surfaced inline.',
@@ -1369,10 +1436,12 @@ body { margin: 0; font-size: var(--text-md); line-height: var(--lh-norm); -webki
     });
     drawerPrimaryAction.addEventListener('click', () => {
       if (activeDrawerType === 'zoneDetail') return openDrawer('zone');
+      if (activeDrawerType === 'rateCardDetail') return openDrawer('rateCardEdit');
       if (activeDrawerType === 'scheduledSummary') return openDrawer('scheduledEdit');
       if (activeDrawerType === 'scheduledEdit') return triggerHandoff('scheduled');
     });
     drawerGhostAction.addEventListener('click', () => {
+      if (activeDrawerType === 'rateCardEdit') return openDrawer('rateCardDetail');
       if (activeDrawerType === 'scheduledEdit') return openDrawer('scheduledSummary');
       closeDrawer();
     });
