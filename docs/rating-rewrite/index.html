@@ -510,9 +510,9 @@ body { margin: 0; font-size: var(--text-md); line-height: var(--lh-norm); -webki
           <table>
             <thead><tr><th>Name</th><th>Client</th><th>Scope</th><th>Uplift</th><th>Dates</th><th>History</th><th>Active</th></tr></thead>
             <tbody>
-              <tr><td class="linkish">Default Auckland Metro</td><td>OTG Cargo</td><td>All same-day courier</td><td>+4% charge / +2% driver</td><td>01 Jul 2026 → Open</td><td>6 versions</td><td><span class="badge success">Active</span></td></tr>
-              <tr><td class="linkish">Medical Air Priority</td><td>Zimmer Biomet NZ</td><td>Flight + critical</td><td>+ $4.50 security</td><td>01 Jan 2026 → Open</td><td>3 versions</td><td><span class="badge success">Active</span></td></tr>
-              <tr><td class="linkish">Bulk South DC Winter</td><td>Woop</td><td>Bulk distribution</td><td>+5% charge</td><td>01 Jun 2026 → 31 Aug 2026</td><td>2 versions</td><td><span class="badge warning">Seasonal</span></td></tr>
+              <tr><td class="linkish" data-open-drawer="rateCardDetail">Default Auckland Metro</td><td>OTG Cargo</td><td>All same-day courier</td><td>+4% charge / +2% driver</td><td>01 Jul 2026 → Open</td><td>6 versions</td><td><span class="badge success">Active</span></td></tr>
+              <tr><td class="linkish" data-open-drawer="rateCardDetail">Medical Air Priority</td><td>Zimmer Biomet NZ</td><td>Flight + critical</td><td>+ $4.50 security</td><td>01 Jan 2026 → Open</td><td>3 versions</td><td><span class="badge success">Active</span></td></tr>
+              <tr><td class="linkish" data-open-drawer="rateCardDetail">Bulk South DC Winter</td><td>Woop</td><td>Bulk distribution</td><td>+5% charge</td><td>01 Jun 2026 → 31 Aug 2026</td><td>2 versions</td><td><span class="badge warning">Seasonal</span></td></tr>
             </tbody>
           </table>
         </div>
@@ -572,29 +572,35 @@ body { margin: 0; font-size: var(--text-md); line-height: var(--lh-norm); -webki
 
       <section class="view" id="view-routed" hidden>
         <div class="page-header">
-          <div><h1>schedule-linked rating behaviour</h1><p>Scheduled rates live under Business as their own sibling area. Use drawer summaries here, then drop into Dane’s richer route builder for multi-leg, bulk-distribution and other schedule-linked pricing complexity.</p></div>
-          <div class="header-actions"><button class="pill-btn secondary" data-handoff-trigger="scheduled">Open Dane's full builder</button><button class="pill-btn primary" data-open-drawer="scheduledEdit">+ New routed template</button></div>
+          <div><h1>schedule-linked rating behaviour</h1><p>Lift Dane’s actual schedules workflow into the Business IA: table first, then a full-screen schedule editor for chain builder, legs, operating schedule, timeline, simulator and client overrides.</p></div>
+          <div class="header-actions"><button class="pill-btn secondary" data-handoff-trigger="scheduled">Open full-screen schedule editor</button><button class="pill-btn primary" data-open-drawer="scheduledEdit">+ New schedule</button></div>
+        </div>
+        <div class="tabs" style="margin-bottom:14px;">
+          <button class="tab active">Schedules</button>
+          <button class="tab">Schedule Groups</button>
         </div>
         <div class="split-grid">
           <div class="panel">
-            <div class="panel-header"><div><h3>Routed / multi-leg</h3><p>Pickup, linehaul and delivery broken into explicit legs.</p></div></div>
+            <div class="panel-header"><div><h3>Schedules table</h3><p>This mirrors Dane’s real list-first entry point before opening the full-screen editor.</p></div><span class="badge success">Real flow</span></div>
             <table>
-              <thead><tr><th>Name</th><th>Client</th><th>Legs</th><th>Pricing basis</th><th>Linked comps</th><th>Active</th></tr></thead>
+              <thead><tr><th>Name</th><th>Days</th><th>Origin</th><th>Dest</th><th>LH</th><th>Speed</th><th>Mode</th><th>Status</th></tr></thead>
               <tbody>
-                <tr><td class="linkish" data-open-drawer="scheduledSummary">Medical North Island Shuttle</td><td>Zimmer Biomet NZ</td><td>3</td><td>Pickup + linehaul + delivery</td><td>Extra charges + break group</td><td><span class="badge success">Live</span></td></tr>
-                <tr><td class="linkish" data-open-drawer="scheduledSummary">Woop Metro Replenishment</td><td>Woop</td><td>4</td><td>Per stop + route flat</td><td>Accessorial group</td><td><span class="badge success">Live</span></td></tr>
+                <tr><td class="linkish" data-open-drawer="scheduledSummary">Medical North Island Shuttle</td><td>Mon–Fri</td><td>Auckland Hub</td><td>Wellington Hub</td><td>✓</td><td>Air Express</td><td>Window</td><td><span class="badge success">Active</span></td></tr>
+                <tr><td class="linkish" data-open-drawer="scheduledSummary">Woop Metro Replenishment</td><td>Mon–Sat</td><td>East Tamaki</td><td>South DC</td><td>✓</td><td>Bulk Route</td><td>Fixed</td><td><span class="badge success">Active</span></td></tr>
+                <tr><td class="linkish" data-open-drawer="scheduledSummary">Auckland Medical Bulk</td><td>Mon–Fri</td><td>East Tamaki</td><td>Regional Drops</td><td>✕</td><td>Metro Van</td><td>Window</td><td><span class="badge warning">Draft</span></td></tr>
               </tbody>
             </table>
           </div>
           <div class="panel">
-            <div class="panel-header"><div><h3>Bulk distribution</h3><p>Hub/DC inbound plus outbound postcode clusters.</p></div></div>
-            <table>
-              <thead><tr><th>Name</th><th>DC</th><th>Outbound basis</th><th>Clusters</th><th>Status</th></tr></thead>
-              <tbody>
-                <tr><td class="linkish" data-open-drawer="scheduledSummary">South DC Grocery Outbound</td><td>Christchurch DC</td><td>Zone cluster</td><td>12</td><td><span class="badge success">Live</span></td></tr>
-                <tr><td class="linkish" data-open-drawer="scheduledSummary">Auckland Medical Bulk</td><td>East Tamaki Hub</td><td>Predetermined routes</td><td>8</td><td><span class="badge warning">Draft</span></td></tr>
-              </tbody>
-            </table>
+            <div class="panel-header"><div><h3>Editor sections lifted from Dane</h3><p>These are the real heavy-edit areas that live in the full-screen schedule editor, not a lightweight drawer.</p></div><span class="badge info">Modal editor</span></div>
+            <div class="component-list" style="padding: 14px;">
+              <div class="component-item"><div><h4>Chain Builder</h4><p>Build the route chain visually and select which leg is active for detailed editing.</p></div><span class="badge success">Primary</span></div>
+              <div class="component-item"><div><h4>Leg Config Panel</h4><p>Collection, depot, linehaul and delivery setup including zones, speeds, pickup source and timing rules.</p></div><span class="badge success">Primary</span></div>
+              <div class="component-item"><div><h4>Operating Schedule</h4><p>Day-by-day enabled state, times and cutoff logic.</p></div><span class="badge success">Primary</span></div>
+              <div class="component-item"><div><h4>Timeline Preview</h4><p>Shows schedule timing and cutoff behaviour back-calculated across the route.</p></div><span class="badge info">Preview</span></div>
+              <div class="component-item"><div><h4>Booking Simulator</h4><p>Tests whether a job would match this schedule based on zones, days and times.</p></div><span class="badge warning">Advanced</span></div>
+              <div class="component-item"><div><h4>Client Overrides</h4><p>Override the base schedule per client without duplicating the whole structure blindly.</p></div><span class="badge warning">Advanced</span></div>
+            </div>
           </div>
         </div>
 
@@ -609,22 +615,22 @@ body { margin: 0; font-size: var(--text-md); line-height: var(--lh-norm); -webki
           </div>
 
           <div class="panel">
-            <div class="panel-header"><div><h3>Dane builder handoff</h3><p>Separate the browse/review layer from the actual scheduled-rate construction workflow.</p></div></div>
+            <div class="panel-header"><div><h3>How the drawer fits now</h3><p>The drawer becomes a light review / governance layer in front of Dane’s real editor, not a replacement for it.</p></div></div>
             <div class="drawer-sections" style="padding:16px;">
               <div class="drawer-card">
                 <h3>List + drawer layer</h3>
                 <div class="review-list">
-                  <div class="review-item"><div class="review-dot" style="background: var(--success);"></div><div><strong>Use here for read-only detail first</strong><div class="body-sm">Open a summary drawer for template name, client, active schedules, legs/stops, pricing basis, linked extras, effective dates, release state and missing links.</div></div></div>
-                  <div class="review-item"><div class="review-dot" style="background: var(--info, var(--c-cyan));"></div><div><strong>Edit stays in the drawer until complexity tips over</strong><div class="body-sm">Simple state changes, effective dates, release notes and dependency fixes can happen in-place before escalation.</div></div></div>
-                  <div class="review-item"><div class="review-dot" style="background: var(--warning);"></div><div><strong>Good for governance actions</strong><div class="body-sm">Clone, archive, review dependencies, effective-date changes, release status.</div></div></div>
+                  <div class="review-item"><div class="review-dot" style="background: var(--success);"></div><div><strong>Read-only detail first</strong><div class="body-sm">Route summary, depots, days, cutoff, override count, release state, linked extras and health.</div></div></div>
+                  <div class="review-item"><div class="review-dot" style="background: var(--info, var(--c-cyan));"></div><div><strong>Only light edits stay here</strong><div class="body-sm">Status, dates, release notes and dependency fixes can happen in the drawer before escalation.</div></div></div>
+                  <div class="review-item"><div class="review-dot" style="background: var(--warning);"></div><div><strong>Good for governance</strong><div class="body-sm">Clone, archive, review dependencies, effective-date changes, release status.</div></div></div>
                 </div>
               </div>
               <div class="drawer-card">
                 <h3>Full builder layer</h3>
                 <div class="review-list">
-                  <div class="review-item"><div class="review-dot" style="background: var(--info, var(--c-cyan));"></div><div><strong>Drop into Dane’s schedule work for setup</strong><div class="body-sm">Route legs, stop order, route clusters, service windows, per-stop/per-leg logic, bulk-route composition.</div></div></div>
-                  <div class="review-item"><div class="review-dot" style="background: var(--warning);"></div><div><strong>Clear handoff state matters</strong><div class="body-sm">Use an explicit “Open Dane’s full builder” handoff action with readiness status so operators know whether they are escalating by choice or because the template is incomplete.</div></div></div>
-                  <div class="review-item"><div class="review-dot" style="background: var(--error);"></div><div><strong>Do not try to force this into a tiny modal</strong><div class="body-sm">Scheduled pricing has too much structure for the old popup pattern.</div></div></div>
+                  <div class="review-item"><div class="review-dot" style="background: var(--info, var(--c-cyan));"></div><div><strong>Lift Dane’s whole editor</strong><div class="body-sm">Chain builder, leg config, operating schedule, timeline preview, simulator and client overrides should stay intact.</div></div></div>
+                  <div class="review-item"><div class="review-dot" style="background: var(--warning);"></div><div><strong>Clear handoff state matters</strong><div class="body-sm">Use an explicit “Open full-screen schedule editor” action with readiness status so operators know exactly when they are leaving the summary layer.</div></div></div>
+                  <div class="review-item"><div class="review-dot" style="background: var(--error);"></div><div><strong>Do not rebuild a fake mini-builder</strong><div class="body-sm">The real schedules editor already exists and should be reused rather than approximated again.</div></div></div>
                 </div>
               </div>
             </div>
@@ -1165,6 +1171,73 @@ body { margin: 0; font-size: var(--text-md); line-height: var(--lh-norm); -webki
             </div>
           </div>`
       },
+      rateCardDetail: {
+        title: 'Default Auckland Metro',
+        subtitle: 'Read-only rate-card drawer shows scope, pricing posture, linked rate families and release state before you switch into edit mode.',
+        stepper: false,
+        actions: { secondary: 'Duplicate card', ghost: 'Close', primary: 'Edit rate card' },
+        html: `
+          <div class="drawer-card">
+            <h3>Rate card summary</h3>
+            <div class="deps">
+              <div class="dep"><div><strong>Client</strong><span>OTG Cargo</span></div><span class="badge success">Active</span></div>
+              <div class="dep"><div><strong>Commercial scope</strong><span>All same-day courier pricing</span></div><span class="badge info">Primary card</span></div>
+              <div class="dep"><div><strong>Effective dates</strong><span>01 Jul 2026 → Open</span></div><span class="badge success">Live</span></div>
+              <div class="dep"><div><strong>Versions</strong><span>6 versions with 1 draft successor</span></div><span class="badge warning">Governed</span></div>
+            </div>
+          </div>
+          <div class="drawer-card">
+            <h3>Coverage and linked pricing</h3>
+            <div class="deps">
+              <div class="dep"><div><strong>On-demand</strong><span>126 zone rates · 122 distance rates</span></div><span class="badge success">Connected</span></div>
+              <div class="dep"><div><strong>Charges</strong><span>After-hours surcharge, critical uplift</span></div><span class="badge success">Connected</span></div>
+              <div class="dep"><div><strong>Territory set</strong><span>Auckland Metro zones</span></div><span class="badge success">Healthy</span></div>
+              <div class="dep"><div><strong>Overlap warnings</strong><span>2 seasonal variants overlap on future dates</span></div><span class="badge warning">Review</span></div>
+            </div>
+          </div>
+          <div class="drawer-card">
+            <h3>Commercial posture</h3>
+            <div class="fields">
+              <div><div class="label">Fuel policy</div><input class="input" value="+4% charge / +2% driver" readonly /></div>
+              <div><div class="label">Owner</div><input class="input" value="Business pricing team" readonly /></div>
+              <div><div class="label">Last release</div><input class="input" value="Metro baseline refresh — Jul 2026" readonly /></div>
+              <div><div class="label">Next action</div><input class="input" value="Review draft successor before spring changes" readonly /></div>
+            </div>
+          </div>`
+      },
+      rateCardEdit: {
+        title: 'Edit Rate Card',
+        subtitle: 'Edit the rate-card state in the drawer for normal commercial changes, without dropping straight into deeper rate maintenance.',
+        stepper: true,
+        actions: { secondary: 'Save draft', ghost: 'Back to detail', primary: 'Next step' },
+        html: `
+          <div class="drawer-card">
+            <h3>Scope</h3>
+            <div class="fields">
+              <div><div class="label">Rate card name</div><input class="input" value="Default Auckland Metro" /></div>
+              <div><div class="label">Client</div><select><option>OTG Cargo</option></select></div>
+              <div><div class="label">Status</div><select><option>Active</option><option>Draft</option><option>Archived</option></select></div>
+              <div><div class="label">Owner</div><input class="input" value="Business pricing team" /></div>
+            </div>
+          </div>
+          <div class="drawer-card">
+            <h3>Pricing posture</h3>
+            <div class="fields">
+              <div><div class="label">Charge fuel overlay</div><input class="input" value="4%" /></div>
+              <div><div class="label">Driver fuel overlay</div><input class="input" value="2%" /></div>
+              <div><div class="label">Effective from</div><input class="input" value="01 Jul 2026" /></div>
+              <div><div class="label">Effective to</div><input class="input" value="Open" /></div>
+              <div class="field full"><div class="label">Release note</div><textarea rows="3">Refine the commercial wrapper and release state here before touching individual rates.</textarea></div>
+            </div>
+          </div>
+          <div class="drawer-card">
+            <h3>Linked components</h3>
+            <div class="deps">
+              <div class="dep"><div><strong>Zone + distance rates</strong><span>248 linked rows inherit this commercial wrapper</span></div><span class="badge success">Connected</span></div>
+              <div class="dep"><div><strong>Seasonal successor</strong><span>Spring draft exists and needs date cleanup</span></div><span class="badge warning">Review</span></div>
+            </div>
+          </div>`
+      },
       flight: {
         title: 'New Flight Rate',
         subtitle: 'Air-freight setup with explicit break pricing and unit dependencies surfaced inline.',
@@ -1228,21 +1301,40 @@ body { margin: 0; font-size: var(--text-md); line-height: var(--lh-norm); -webki
             </div>
           </div>
           <div class="drawer-card">
+            <h3>Operational summary</h3>
+            <div class="fields">
+              <div><div class="label">Booking mode</div><input class="input" value="Window" readonly /></div>
+              <div><div class="label">Operating days</div><input class="input" value="Mon, Tue, Wed, Thu, Fri" readonly /></div>
+              <div><div class="label">Origin depot</div><input class="input" value="Auckland Hub" readonly /></div>
+              <div><div class="label">Destination depot</div><input class="input" value="Wellington Hub" readonly /></div>
+              <div><div class="label">Cutoff</div><input class="input" value="4 hours before collection" readonly /></div>
+              <div><div class="label">Client overrides</div><input class="input" value="2 active overrides" readonly /></div>
+            </div>
+          </div>
+          <div class="drawer-card">
             <h3>Commercial shape</h3>
             <div class="fields">
-              <div><div class="label">Pickup leg</div><input class="input" value="Auckland hospital pickups" readonly /></div>
-              <div><div class="label">Linehaul leg</div><input class="input" value="AKL → WLG overnight linehaul" readonly /></div>
-              <div><div class="label">Delivery leg</div><input class="input" value="Wellington metro med delivery" readonly /></div>
+              <div><div class="label">Collection leg</div><input class="input" value="Pickup source: customer address · window 14:00–16:00" readonly /></div>
+              <div><div class="label">Linehaul leg</div><input class="input" value="AKL → WLG overnight linehaul · insert to bulk" readonly /></div>
+              <div><div class="label">Delivery leg</div><input class="input" value="Wellington metro delivery zones with route speed applied" readonly /></div>
               <div><div class="label">Linked extras</div><input class="input" value="After-hours + medical handling" readonly /></div>
               <div><div class="label">Effective dates</div><input class="input" value="01 Mar 2026 → Open" readonly /></div>
               <div><div class="label">Release note</div><input class="input" value="North Island routed medical baseline" readonly /></div>
             </div>
           </div>
           <div class="drawer-card">
+            <h3>What stays in Dane's builder</h3>
+            <div class="review-list">
+              <div class="review-item"><div class="review-dot" style="background: var(--info, var(--c-cyan));"></div><div><strong>Chain builder + leg config</strong><div class="body-sm">Collection, depot, linehaul and delivery leg setup with pickup source, zones, speeds and timing logic.</div></div></div>
+              <div class="review-item"><div class="review-dot" style="background: var(--info, var(--c-cyan));"></div><div><strong>Operating schedule + timeline preview</strong><div class="body-sm">Day-by-day schedule windows, cutoff editing and back-calculation live in the full editor.</div></div></div>
+              <div class="review-item"><div class="review-dot" style="background: var(--warning);"></div><div><strong>Booking simulator + client overrides</strong><div class="body-sm">Simulation and per-client override editing belong to the full-screen workflow, not the lightweight summary drawer.</div></div></div>
+            </div>
+          </div>
+          <div class="drawer-card">
             <h3>Builder handoff</h3>
             <div class="deps">
-              <div class="dep"><div><strong>Drawer coverage</strong><span>Release state, dates, dependencies, light edits</span></div><span class="badge success">Good here</span></div>
-              <div class="dep"><div><strong>Dane’s full builder</strong><span>Leg logic, stop order, route clusters, per-stop pricing and windows</span></div><span class="badge warning">Escalate when needed</span></div>
+              <div class="dep"><div><strong>Drawer coverage</strong><span>Route summary, depots, days, cutoff, overrides count, release state</span></div><span class="badge success">Good here</span></div>
+              <div class="dep"><div><strong>Dane’s full builder</strong><span>Leg logic, zones, timings, simulator, override editing</span></div><span class="badge warning">Escalate when needed</span></div>
               <div class="dep"><div><strong>Handoff state</strong><span id="handoffStateLabel">Ready to hand off with full context pack</span></div><span class="badge info" id="handoffStateBadge">Ready</span></div>
             </div>
             <div class="header-actions" style="justify-content:flex-start; margin-top:12px; gap:10px;">
@@ -1269,9 +1361,12 @@ body { margin: 0; font-size: var(--text-md); line-height: var(--lh-norm); -webki
           <div class="drawer-card">
             <h3>Summary controls</h3>
             <div class="fields">
+              <div><div class="label">Booking mode</div><select><option>Window</option><option>Fixed time</option></select></div>
+              <div><div class="label">Operating days</div><input class="input" value="Mon, Tue, Wed, Thu, Fri" /></div>
               <div><div class="label">Pricing basis</div><input class="input" value="Pickup + linehaul + delivery" /></div>
               <div><div class="label">Effective from</div><input class="input" value="01 Mar 2026" /></div>
               <div><div class="label">Effective to</div><input class="input" value="Open" /></div>
+              <div><div class="label">Cutoff rule</div><input class="input" value="4 hours before collection" /></div>
               <div class="field full"><div class="label">Release note</div><textarea rows="3">Adjusted Saturday urgent handling and confirmed all linked extras before handoff into the full builder.</textarea></div>
             </div>
           </div>
@@ -1280,7 +1375,8 @@ body { margin: 0; font-size: var(--text-md); line-height: var(--lh-norm); -webki
             <div class="deps">
               <div class="dep"><div><strong>Extra charges</strong><span>After-hours surcharge, medical handling</span></div><span class="badge success">Connected</span></div>
               <div class="dep"><div><strong>Schedule links</strong><span>2 active schedules use this template</span></div><span class="badge success">Tracked</span></div>
-              <div class="dep"><div><strong>Route logic coverage</strong><span>Leg order and service windows still belong to Dane’s builder</span></div><span class="badge warning">Handoff required</span></div>
+              <div class="dep"><div><strong>Origin / destination depots</strong><span>Auckland Hub → Wellington Hub</span></div><span class="badge success">Tracked</span></div>
+              <div class="dep"><div><strong>Route logic coverage</strong><span>Leg order, zones, service windows and simulator still belong to Dane’s builder</span></div><span class="badge warning">Handoff required</span></div>
             </div>
           </div>
           <div class="drawer-card">
@@ -1369,10 +1465,12 @@ body { margin: 0; font-size: var(--text-md); line-height: var(--lh-norm); -webki
     });
     drawerPrimaryAction.addEventListener('click', () => {
       if (activeDrawerType === 'zoneDetail') return openDrawer('zone');
+      if (activeDrawerType === 'rateCardDetail') return openDrawer('rateCardEdit');
       if (activeDrawerType === 'scheduledSummary') return openDrawer('scheduledEdit');
       if (activeDrawerType === 'scheduledEdit') return triggerHandoff('scheduled');
     });
     drawerGhostAction.addEventListener('click', () => {
+      if (activeDrawerType === 'rateCardEdit') return openDrawer('rateCardDetail');
       if (activeDrawerType === 'scheduledEdit') return openDrawer('scheduledSummary');
       closeDrawer();
     });
