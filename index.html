@@ -572,7 +572,7 @@ body { margin: 0; font-size: var(--text-md); line-height: var(--lh-norm); -webki
 
       <section class="view" id="view-routed" hidden>
         <div class="page-header">
-          <div><h1>schedule-linked rating behaviour</h1><p>Use drawer summaries here, then drop into the richer route builder for multi-leg, bulk-distribution and other schedule-linked pricing complexity.</p></div>
+          <div><h1>schedule-linked rating behaviour</h1><p>Scheduled rates live under Business as their own sibling area. Use drawer summaries here, then drop into Dane’s richer route builder for multi-leg, bulk-distribution and other schedule-linked pricing complexity.</p></div>
           <div class="header-actions"><button class="pill-btn secondary">Open full builder</button><button class="pill-btn primary">+ New routed template</button></div>
         </div>
         <div class="split-grid">
@@ -595,6 +595,37 @@ body { margin: 0; font-size: var(--text-md); line-height: var(--lh-norm); -webki
                 <tr><td class="linkish">Auckland Medical Bulk</td><td>East Tamaki Hub</td><td>Predetermined routes</td><td>8</td><td><span class="badge warning">Draft</span></td></tr>
               </tbody>
             </table>
+          </div>
+        </div>
+
+        <div class="split-grid" style="margin-top: 14px;">
+          <div class="panel">
+            <div class="panel-header"><div><h3>Where scheduled rates sit</h3><p>Keep scheduled pricing visible in the Business IA instead of hiding it inside generic rating maintenance.</p></div></div>
+            <div class="component-list" style="padding: 14px;">
+              <div class="component-item"><div><h4>Business → schedule-linked rating behaviour</h4><p>Main menu home for routed templates, bulk-distribution templates, scheduled pricing review and release state.</p></div><span class="badge success">Primary location</span></div>
+              <div class="component-item"><div><h4>Business → Pricing & Rating</h4><p>On-demand, air and reusable pricing components stay here. Scheduled items can be referenced, but not authored here.</p></div><span class="badge info">Reference only</span></div>
+              <div class="component-item"><div><h4>Business → Rate Codes</h4><p>Scheduled-only rate codes still appear here, but they point back to the scheduled pricing setup rather than duplicating it.</p></div><span class="badge warning">Linked, not owned</span></div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header"><div><h3>Dane builder handoff</h3><p>Separate the browse/review layer from the actual scheduled-rate construction workflow.</p></div></div>
+            <div class="drawer-sections" style="padding:16px;">
+              <div class="drawer-card">
+                <h3>List + drawer layer</h3>
+                <div class="review-list">
+                  <div class="review-item"><div class="review-dot" style="background: var(--success);"></div><div><strong>Use here for view/edit summary</strong><div class="body-sm">Template name, client, active schedules, legs/stops, pricing basis, linked extras, effective dates, status.</div></div></div>
+                  <div class="review-item"><div class="review-dot" style="background: var(--warning);"></div><div><strong>Good for governance actions</strong><div class="body-sm">Clone, archive, review dependencies, effective-date changes, release status.</div></div></div>
+                </div>
+              </div>
+              <div class="drawer-card">
+                <h3>Full builder layer</h3>
+                <div class="review-list">
+                  <div class="review-item"><div class="review-dot" style="background: var(--info, var(--c-cyan));"></div><div><strong>Drop into Dane’s schedule work for setup</strong><div class="body-sm">Route legs, stop order, route clusters, service windows, per-stop/per-leg logic, bulk-route composition.</div></div></div>
+                  <div class="review-item"><div class="review-dot" style="background: var(--error);"></div><div><strong>Do not try to force this into a tiny modal</strong><div class="body-sm">Scheduled pricing has too much structure for the old popup pattern.</div></div></div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
