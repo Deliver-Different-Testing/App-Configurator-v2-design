@@ -378,18 +378,6 @@ body { margin: 0; font-size: var(--text-md); line-height: var(--lh-norm); -webki
           <button class="nav-item active" data-view="overview">Pricing & Rating</button>
         </div>
         <div class="nav-group">
-          <div class="nav-group-title">Pricing & Rating</div>
-          <div class="nav-sub">
-            <button class="nav-item" data-view="ratecards">Rate Cards</button>
-            <button class="nav-item" data-view="ondemand">On-Demand</button>
-            <button class="nav-item" data-view="airfreight">Air Freight</button>
-            <button class="nav-item" data-view="charges">Charges & Accessorials</button>
-            <button class="nav-item" data-view="breaks">Break Pricing</button>
-            <button class="nav-item" data-view="units">Units & Measures</button>
-            <button class="nav-item" data-view="induction">Rating Induction / Import</button>
-          </div>
-        </div>
-        <div class="nav-group">
           <div class="nav-group-title">Commercial structure</div>
           <button class="nav-item" data-view="ratecodes">Rate Codes</button>
           <button class="nav-item" data-view="pricing">Pricing</button>
@@ -421,13 +409,22 @@ body { margin: 0; font-size: var(--text-md); line-height: var(--lh-norm); -webki
             <p>Fold core rating, support data and schedule-linked pricing behaviour into the agreed Business menu structure Kerran is building from.</p>
           </div>
           <div class="header-actions">
-            <button class="pill-btn secondary">Import rates</button>
+            <button class="pill-btn secondary" data-view-jump="induction">Import rates</button>
             <button class="pill-btn primary open-zone-drawer">Add on-demand rate</button>
           </div>
         </div>
 
+        <div class="tabs module-tabs">
+          <button class="tab module-tab active" data-view-jump="ondemand">On-Demand</button>
+          <button class="tab module-tab" data-view-jump="airfreight">Air Freight</button>
+          <button class="tab module-tab" data-view-jump="charges">Charges & Accessorials</button>
+          <button class="tab module-tab" data-view-jump="breaks">Break Pricing</button>
+          <button class="tab module-tab" data-view-jump="units">Units & Measures</button>
+          <button class="tab module-tab" data-view-jump="routed">Schedule-linked</button>
+        </div>
+
         <div class="stats">
-          <div class="card stat-card tint-cyan"><div class="label">RATE CARDS</div><div class="value">14</div><div class="sub">3 draft / 11 active</div></div>
+          <div class="card stat-card tint-cyan"><div class="label">SCHEDULE TEMPLATES</div><div class="value">18</div><div class="sub">5 multi-leg / 13 active</div></div>
           <div class="card stat-card tint-green"><div class="label">ON-DEMAND RATES</div><div class="value">248</div><div class="sub">Zone + distance across 7 clients</div></div>
           <div class="card stat-card tint-purple"><div class="label">AIR FREIGHT RATES</div><div class="value">36</div><div class="sub">8 use break pricing</div></div>
           <div class="card stat-card tint-orange"><div class="label">LINK WARNINGS</div><div class="value">5</div><div class="sub">Missing component or overlap</div></div>
@@ -488,15 +485,6 @@ body { margin: 0; font-size: var(--text-md); line-height: var(--lh-norm); -webki
               <div class="mini"><div class="k">Linked sets</div><div class="v">18</div></div>
             </div>
           </div>
-          <div class="card overview-card" data-view-jump="induction">
-            <div class="overview-title"><h3>Rating Induction / Import</h3><span class="badge info">AI assisted</span></div>
-            <p class="body-sm">Use existing rate download/upload behaviour as the base, then add AI matching so spreadsheet pricing can be translated into the best-fit DFRNT structure.</p>
-            <div class="mini-metrics">
-              <div class="mini"><div class="k">Uploads</div><div class="v">12</div></div>
-              <div class="mini"><div class="k">High confidence</div><div class="v">7</div></div>
-              <div class="mini"><div class="k">Needs review</div><div class="v">5</div></div>
-            </div>
-          </div>
         </div>
       </section>
 
@@ -521,7 +509,15 @@ body { margin: 0; font-size: var(--text-md); line-height: var(--lh-norm); -webki
       <section class="view" id="view-ondemand" hidden>
         <div class="page-header">
           <div><h1>On-Demand</h1><p>Zone and distance pricing for immediate courier work.</p></div>
-          <div class="header-actions"><button class="pill-btn secondary">Import</button><button class="pill-btn primary open-zone-drawer">+ Add rate</button></div>
+          <div class="header-actions"><button class="pill-btn secondary" data-view-jump="induction">Import</button><button class="pill-btn primary open-zone-drawer">+ Add rate</button></div>
+        </div>
+        <div class="tabs module-tabs">
+          <button class="tab module-tab active" data-view-jump="ondemand">On-Demand</button>
+          <button class="tab module-tab" data-view-jump="airfreight">Air Freight</button>
+          <button class="tab module-tab" data-view-jump="charges">Charges & Accessorials</button>
+          <button class="tab module-tab" data-view-jump="breaks">Break Pricing</button>
+          <button class="tab module-tab" data-view-jump="units">Units & Measures</button>
+          <button class="tab module-tab" data-view-jump="routed">Schedule-linked</button>
         </div>
         <div class="toolbar">
           <input class="search" placeholder="Search by name, client, service or vehicle" />
@@ -546,6 +542,14 @@ body { margin: 0; font-size: var(--text-md); line-height: var(--lh-norm); -webki
         <div class="page-header">
           <div><h1>Air Freight</h1><p>Door-to-door flight pricing with fuel, security, critical and cargo-break logic.</p></div>
           <div class="header-actions"><button class="pill-btn secondary">Break groups</button><button class="pill-btn primary open-flight-drawer">+ Add flight rate</button></div>
+        </div>
+        <div class="tabs module-tabs">
+          <button class="tab module-tab" data-view-jump="ondemand">On-Demand</button>
+          <button class="tab module-tab active" data-view-jump="airfreight">Air Freight</button>
+          <button class="tab module-tab" data-view-jump="charges">Charges & Accessorials</button>
+          <button class="tab module-tab" data-view-jump="breaks">Break Pricing</button>
+          <button class="tab module-tab" data-view-jump="units">Units & Measures</button>
+          <button class="tab module-tab" data-view-jump="routed">Schedule-linked</button>
         </div>
         <div class="split-grid">
           <div class="panel">
@@ -574,6 +578,14 @@ body { margin: 0; font-size: var(--text-md); line-height: var(--lh-norm); -webki
         <div class="page-header">
           <div><h1>schedule-linked rating behaviour</h1><p>Lift Dane’s actual schedules workflow into the Business IA: table first, then a full-screen schedule editor for chain builder, legs, operating schedule, timeline, simulator and client overrides.</p></div>
           <div class="header-actions"><button class="pill-btn secondary" data-handoff-trigger="scheduled">Open full-screen schedule editor</button><button class="pill-btn primary" data-open-drawer="scheduledEdit">+ New schedule</button></div>
+        </div>
+        <div class="tabs module-tabs">
+          <button class="tab module-tab" data-view-jump="ondemand">On-Demand</button>
+          <button class="tab module-tab" data-view-jump="airfreight">Air Freight</button>
+          <button class="tab module-tab" data-view-jump="charges">Charges & Accessorials</button>
+          <button class="tab module-tab" data-view-jump="breaks">Break Pricing</button>
+          <button class="tab module-tab" data-view-jump="units">Units & Measures</button>
+          <button class="tab module-tab active" data-view-jump="routed">Schedule-linked</button>
         </div>
         <div class="tabs" style="margin-bottom:14px;">
           <button class="tab active">Schedules</button>
@@ -643,6 +655,14 @@ body { margin: 0; font-size: var(--text-md); line-height: var(--lh-norm); -webki
           <div><h1>Charges & Accessorials</h1><p>Reusable extra charges and grouped accessorials surfaced as proper rating components.</p></div>
           <div class="header-actions"><button class="pill-btn secondary">Accessorial groups</button><button class="pill-btn primary">+ New charge</button></div>
         </div>
+        <div class="tabs module-tabs">
+          <button class="tab module-tab" data-view-jump="ondemand">On-Demand</button>
+          <button class="tab module-tab" data-view-jump="airfreight">Air Freight</button>
+          <button class="tab module-tab active" data-view-jump="charges">Charges & Accessorials</button>
+          <button class="tab module-tab" data-view-jump="breaks">Break Pricing</button>
+          <button class="tab module-tab" data-view-jump="units">Units & Measures</button>
+          <button class="tab module-tab" data-view-jump="routed">Schedule-linked</button>
+        </div>
         <div class="split-grid">
           <div class="panel">
             <div class="panel-header"><div><h3>Extra charges</h3><p>Currently buried in System, now inside Rating.</p></div></div>
@@ -671,6 +691,14 @@ body { margin: 0; font-size: var(--text-md); line-height: var(--lh-norm); -webki
           <div><h1>Break Pricing</h1><p>Tiered pricing components moved out of obscure System maintenance screens and into the rating module.</p></div>
           <div class="header-actions"><button class="pill-btn secondary">Break types</button><button class="pill-btn primary">+ New break group</button></div>
         </div>
+        <div class="tabs module-tabs">
+          <button class="tab module-tab" data-view-jump="ondemand">On-Demand</button>
+          <button class="tab module-tab" data-view-jump="airfreight">Air Freight</button>
+          <button class="tab module-tab" data-view-jump="charges">Charges & Accessorials</button>
+          <button class="tab module-tab active" data-view-jump="breaks">Break Pricing</button>
+          <button class="tab module-tab" data-view-jump="units">Units & Measures</button>
+          <button class="tab module-tab" data-view-jump="routed">Schedule-linked</button>
+        </div>
         <div class="panel">
           <div class="panel-header"><div><h3>Break groups</h3><p>Used heavily by air-freight and any future break-based logic.</p></div></div>
           <table>
@@ -688,6 +716,14 @@ body { margin: 0; font-size: var(--text-md); line-height: var(--lh-norm); -webki
         <div class="page-header">
           <div><h1>Units & Measures</h1><p>Reusable unit types shared across extra charges, break groups and broader territory / rating support data.</p></div>
           <div class="header-actions"><button class="pill-btn primary">+ New unit type</button></div>
+        </div>
+        <div class="tabs module-tabs">
+          <button class="tab module-tab" data-view-jump="ondemand">On-Demand</button>
+          <button class="tab module-tab" data-view-jump="airfreight">Air Freight</button>
+          <button class="tab module-tab" data-view-jump="charges">Charges & Accessorials</button>
+          <button class="tab module-tab" data-view-jump="breaks">Break Pricing</button>
+          <button class="tab module-tab active" data-view-jump="units">Units & Measures</button>
+          <button class="tab module-tab" data-view-jump="routed">Schedule-linked</button>
         </div>
         <div class="panel">
           <div class="panel-header"><div><h3>Unit types</h3><p>Small screen, but visible and linkable from wherever rates are built.</p></div></div>
@@ -1407,6 +1443,9 @@ body { margin: 0; font-size: var(--text-md); line-height: var(--lh-norm); -webki
     function setView(name) {
       views.forEach(v => v.hidden = v.id !== 'view-' + name);
       navItems.forEach(i => i.classList.toggle('active', i.dataset.view === name));
+      document.querySelectorAll('.module-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.viewJump === name);
+      });
     }
 
     function openDrawer(type) {
