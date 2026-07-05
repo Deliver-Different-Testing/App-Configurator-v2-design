@@ -325,6 +325,7 @@ body { margin: 0; font-size: var(--text-md); line-height: var(--lh-norm); -webki
     thead th { text-align: left; padding: 11px 14px; font: 600 11px var(--font-ui); text-transform: uppercase; letter-spacing: .08em; color: var(--fg-2); background: var(--bg-surface); border-bottom: 1px solid var(--border-light); }
     tbody td { padding: 13px 14px; font-size: 13px; border-bottom: 1px solid var(--border-light); }
     tbody tr:hover { background: #fbfdff; }
+    tbody tr[data-open-drawer] { cursor: pointer; }
     tbody tr:last-child td { border-bottom: none; }
     .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
     .linkish { color: var(--c-cyan); font-weight: 500; cursor: pointer; }
@@ -653,9 +654,9 @@ body { margin: 0; font-size: var(--text-md); line-height: var(--lh-norm); -webki
             <table>
               <thead><tr><th>Name</th><th>Type</th><th>Unit</th><th>Calculation</th><th>Available at</th><th>Active</th></tr></thead>
               <tbody>
-                <tr><td class="linkish" data-open-drawer="chargeDetail">After-hours surcharge</td><td>Flat</td><td>Job</td><td>$18.00 min</td><td>Booking / Dispatch</td><td><span class="badge success">Active</span></td></tr>
-                <tr><td class="linkish" data-open-drawer="chargeDetail">Wait time</td><td>Per unit</td><td>Minute</td><td>$1.25 / min after 15 free</td><td>Dispatch / Courier</td><td><span class="badge success">Active</span></td></tr>
-                <tr><td class="linkish" data-open-drawer="chargeDetail">Remote area uplift</td><td>Percentage</td><td>Job total</td><td>4%</td><td>Booking</td><td><span class="badge warning">Scoped</span></td></tr>
+                <tr data-open-drawer="chargeDetail"><td class="linkish">After-hours surcharge</td><td>Flat</td><td>Job</td><td>$18.00 min</td><td>Booking / Dispatch</td><td><span class="badge success">Active</span></td></tr>
+                <tr data-open-drawer="chargeDetail"><td class="linkish">Wait time</td><td>Per unit</td><td>Minute</td><td>$1.25 / min after 15 free</td><td>Dispatch / Courier</td><td><span class="badge success">Active</span></td></tr>
+                <tr data-open-drawer="chargeDetail"><td class="linkish">Remote area uplift</td><td>Percentage</td><td>Job total</td><td>4%</td><td>Booking</td><td><span class="badge warning">Scoped</span></td></tr>
               </tbody>
             </table>
           </div>
