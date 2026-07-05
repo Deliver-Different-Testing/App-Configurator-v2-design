@@ -395,10 +395,10 @@ body { margin: 0; font-size: var(--text-md); line-height: var(--lh-norm); -webki
           <button class="nav-item active" data-view="overview">Pricing & Rating</button>
         </div>
         <div class="nav-group">
-          <div class="nav-group-title">Commercial structure</div>
           <button class="nav-item" data-view="ratecodes">Rate Codes</button>
           <button class="nav-item" data-view="pricing">Pricing</button>
-          <button class="nav-item" data-view="territory">Territory / rating support data</button>
+          <button class="nav-item" data-view="locationmanagement">Location Management</button>
+          <button class="nav-item" data-view="zipszones">Zips & Zones</button>
           <button class="nav-item" data-view="routed">schedule-linked rating behaviour</button>
         </div>
       </nav>
@@ -415,7 +415,7 @@ body { margin: 0; font-size: var(--text-md); line-height: var(--lh-norm); -webki
         </div>
         <div class="panel">
           <div class="panel-header"><div><h3>Client modal relationship</h3><p>Customer detail remains its own modal/workspace while pricing and rating become sibling Business navigation.</p></div><span class="badge info">Sibling module</span></div>
-          <div style="padding:16px; color: var(--fg-2); font-size: 14px;">Kerran’s client/customer modal starts here. Pricing & Rating, Rate Codes, Pricing, Territory / rating support data, and schedule-linked rating behaviour all sit alongside it under Business.</div>
+          <div style="padding:16px; color: var(--fg-2); font-size: 14px;">Kerran’s client/customer modal starts here. Pricing & Rating, Rate Codes, Pricing, Location Management, Zips & Zones, and schedule-linked rating behaviour all sit alongside it under Business.</div>
         </div>
       </section>
 
@@ -499,13 +499,22 @@ body { margin: 0; font-size: var(--text-md); line-height: var(--lh-norm); -webki
               <div class="mini"><div class="k">Linked</div><div class="v">7</div></div>
             </div>
           </div>
-          <div class="card overview-card" data-view-jump="territory">
-            <div class="overview-title"><h3>Territory / rating support data</h3><span class="badge error">Needs cleanup</span></div>
-            <p class="body-sm">Zones, postcode scope, unit types and linked support entities brought into one coherent setup area.</p>
+          <div class="card overview-card" data-view-jump="locationmanagement">
+            <div class="overview-title"><h3>Location Management</h3><span class="badge info">System-aligned</span></div>
+            <p class="body-sm">Bring the Admin Manager location structures into the rating workflow without burying them inside generic setup.</p>
             <div class="mini-metrics">
-              <div class="mini"><div class="k">Zones</div><div class="v">54</div></div>
-              <div class="mini"><div class="k">Unmapped</div><div class="v">3</div></div>
-              <div class="mini"><div class="k">Linked sets</div><div class="v">18</div></div>
+              <div class="mini"><div class="k">Driver lists</div><div class="v">14</div></div>
+              <div class="mini"><div class="k">Drop off</div><div class="v">38</div></div>
+              <div class="mini"><div class="k">Locations</div><div class="v">62</div></div>
+            </div>
+          </div>
+          <div class="card overview-card" data-view-jump="zipszones">
+            <div class="overview-title"><h3>Zips & Zones</h3><span class="badge warning">Needs cleanup</span></div>
+            <p class="body-sm">Zip codes, polygons, zone groups and zones kept together as the geographic backbone behind pricing logic.</p>
+            <div class="mini-metrics">
+              <div class="mini"><div class="k">Zip codes</div><div class="v">54</div></div>
+              <div class="mini"><div class="k">Polygons</div><div class="v">12</div></div>
+              <div class="mini"><div class="k">Groups</div><div class="v">18</div></div>
             </div>
           </div>
         </div>
@@ -797,27 +806,82 @@ body { margin: 0; font-size: var(--text-md); line-height: var(--lh-norm); -webki
         </div>
       </section>
 
-      <section class="view" id="view-territory" hidden>
+      <section class="view" id="view-locationmanagement" hidden>
         <div class="page-header">
-          <div><h1>Territory / rating support data</h1><p>Zones, postcode/zip scope, unit types and support entities that the pricing structures depend on.</p></div>
-          <div class="header-actions"><button class="pill-btn secondary">Import support data</button><button class="pill-btn primary">+ New territory set</button></div>
+          <div><h1>Location Management</h1><p>Use the existing Admin Manager location structures as first-class support data for pricing and operational setup.</p></div>
+          <div class="header-actions"><button class="pill-btn secondary">Import locations</button><button class="pill-btn primary">+ New location</button></div>
+        </div>
+        <div class="tabs module-tabs">
+          <button class="tab module-tab" data-view-jump="ondemand">On-Demand</button>
+          <button class="tab module-tab" data-view-jump="airfreight">Air Freight</button>
+          <button class="tab module-tab" data-view-jump="charges">Charges & Accessorials</button>
+          <button class="tab module-tab" data-view-jump="breaks">Break Pricing</button>
+          <button class="tab module-tab" data-view-jump="units">Units & Measures</button>
+          <button class="tab module-tab" data-view-jump="routed">Schedule-linked</button>
+        </div>
+        <div class="tabs">
+          <button class="tab active">Driver Location Lists</button>
+          <button class="tab">Drop Off Locations</button>
+          <button class="tab">Locations</button>
         </div>
         <div class="split-grid">
           <div class="panel">
-            <div class="panel-header"><div><h3>Support datasets</h3><p>Core territory and support entities that keep rating structures consistent.</p></div><span class="badge warning">Needs rationalisation</span></div>
+            <div class="panel-header"><div><h3>Location datasets</h3><p>Keep the existing Admin Manager location entities grouped the way operators already understand them.</p></div><span class="badge success">Useful split</span></div>
             <div class="component-list" style="padding: 16px;">
-              <div class="component-item"><div><h4>Zones</h4><p>Pickup/drop geography used by zone and routed pricing.</p></div><span class="badge info">54 active</span></div>
-              <div class="component-item"><div><h4>Postcode scope</h4><p>Zip/postcode constraints for distance and routed logic.</p></div><span class="badge warning">3 unresolved</span></div>
-              <div class="component-item"><div><h4>Unit types</h4><p>Shared dimensions used by extras and break pricing.</p></div><span class="badge success">Connected</span></div>
-              <div class="component-item"><div><h4>Accessorial support data</h4><p>Linked unit and rule metadata behind reusable charges.</p></div><span class="badge info">Reusable</span></div>
+              <div class="component-item"><div><h4>Driver Location Lists</h4><p>Reusable operational location sets that ratings and dispatch logic can point at.</p></div><span class="badge info">14 lists</span></div>
+              <div class="component-item"><div><h4>Drop Off Locations</h4><p>Named delivery endpoints that should stay grouped as their own top tab.</p></div><span class="badge info">38 active</span></div>
+              <div class="component-item"><div><h4>Locations</h4><p>Master location records used by other pricing and operational structures.</p></div><span class="badge info">62 active</span></div>
+              <div class="component-item"><div><h4>Rating links</h4><p>These entities feed schedules, route logic and location-aware pricing rules.</p></div><span class="badge success">Connected</span></div>
             </div>
           </div>
           <div class="panel">
-            <div class="panel-header"><div><h3>Health summary</h3><p>Make dependencies visible before rate setup breaks downstream.</p></div></div>
+            <div class="panel-header"><div><h3>Why this belongs in the nav</h3><p>This is real system structure, not just abstract support data.</p></div></div>
+            <div class="drawer-sections" style="padding: 16px;">
+              <div class="drawer-card"><h3>Current issues</h3><div class="review-list">
+                <div class="review-item"><div class="review-dot" style="background: var(--success);"></div><div><strong>Matches existing Admin Manager mental model</strong><div class="caption">Operators already think in these buckets.</div></div></div>
+                <div class="review-item"><div class="review-dot" style="background: var(--warning);"></div><div><strong>Some pricing logic depends on location quality</strong><div class="caption">Bad location data still breaks schedule and distance behaviour downstream.</div></div></div>
+              </div></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="view" id="view-zipszones" hidden>
+        <div class="page-header">
+          <div><h1>Zips & Zones</h1><p>Geographic structures for postcode coverage, polygon boundaries and grouped rating zones.</p></div>
+          <div class="header-actions"><button class="pill-btn secondary">Import zip data</button><button class="pill-btn primary">+ New zone</button></div>
+        </div>
+        <div class="tabs module-tabs">
+          <button class="tab module-tab" data-view-jump="ondemand">On-Demand</button>
+          <button class="tab module-tab" data-view-jump="airfreight">Air Freight</button>
+          <button class="tab module-tab" data-view-jump="charges">Charges & Accessorials</button>
+          <button class="tab module-tab" data-view-jump="breaks">Break Pricing</button>
+          <button class="tab module-tab" data-view-jump="units">Units & Measures</button>
+          <button class="tab module-tab" data-view-jump="routed">Schedule-linked</button>
+        </div>
+        <div class="tabs">
+          <button class="tab active">Zip Codes</button>
+          <button class="tab">Zip Polygons</button>
+          <button class="tab">Zone Groups</button>
+          <button class="tab">Zones</button>
+        </div>
+        <div class="split-grid">
+          <div class="panel">
+            <div class="panel-header"><div><h3>Geographic support datasets</h3><p>Keep postcode and zone logic together instead of hiding it in generic support data.</p></div><span class="badge warning">Needs cleanup</span></div>
+            <div class="component-list" style="padding: 16px;">
+              <div class="component-item"><div><h4>Zip Codes</h4><p>Base postcode records used by validation, matching and distance logic.</p></div><span class="badge info">54 active</span></div>
+              <div class="component-item"><div><h4>Zip Polygons</h4><p>Boundary geometry for map-based coverage and zone assignment.</p></div><span class="badge info">12 polygons</span></div>
+              <div class="component-item"><div><h4>Zone Groups</h4><p>Reusable clusters of zones for pricing, schedules and service coverage.</p></div><span class="badge info">18 groups</span></div>
+              <div class="component-item"><div><h4>Zones</h4><p>Named geographic rating zones used throughout on-demand and routed pricing.</p></div><span class="badge info">54 active</span></div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-header"><div><h3>Health summary</h3><p>Make geographic issues visible before they leak into rates and schedules.</p></div></div>
             <div class="drawer-sections" style="padding: 16px;">
               <div class="drawer-card"><h3>Current issues</h3><div class="review-list">
                 <div class="review-item"><div class="review-dot" style="background: var(--warning);"></div><div><strong>Metro South postcode set</strong><div class="caption">Needs tidy-up before final distance import.</div></div></div>
-                <div class="review-item"><div class="review-dot" style="background: var(--error);"></div><div><strong>2 unit mappings missing</strong><div class="caption">Break pricing cannot publish cleanly until matched.</div></div></div>
+                <div class="review-item"><div class="review-dot" style="background: var(--warning);"></div><div><strong>2 polygon overlaps</strong><div class="caption">Boundary conflicts could produce ambiguous zone assignment.</div></div></div>
+                <div class="review-item"><div class="review-dot" style="background: var(--error);"></div><div><strong>3 orphan zip codes</strong><div class="caption">Present in data but not mapped into any live zone group.</div></div></div>
               </div></div>
             </div>
           </div>
