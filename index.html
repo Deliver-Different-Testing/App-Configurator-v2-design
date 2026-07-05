@@ -573,7 +573,7 @@ body { margin: 0; font-size: var(--text-md); line-height: var(--lh-norm); -webki
       <section class="view" id="view-routed" hidden>
         <div class="page-header">
           <div><h1>schedule-linked rating behaviour</h1><p>Scheduled rates live under Business as their own sibling area. Use drawer summaries here, then drop into Dane’s richer route builder for multi-leg, bulk-distribution and other schedule-linked pricing complexity.</p></div>
-          <div class="header-actions"><button class="pill-btn secondary">Open full builder</button><button class="pill-btn primary">+ New routed template</button></div>
+          <div class="header-actions"><button class="pill-btn secondary" data-handoff-trigger="scheduled">Open Dane's full builder</button><button class="pill-btn primary" data-open-drawer="scheduledEdit">+ New routed template</button></div>
         </div>
         <div class="split-grid">
           <div class="panel">
@@ -581,8 +581,8 @@ body { margin: 0; font-size: var(--text-md); line-height: var(--lh-norm); -webki
             <table>
               <thead><tr><th>Name</th><th>Client</th><th>Legs</th><th>Pricing basis</th><th>Linked comps</th><th>Active</th></tr></thead>
               <tbody>
-                <tr><td class="linkish">Medical North Island Shuttle</td><td>Zimmer Biomet NZ</td><td>3</td><td>Pickup + linehaul + delivery</td><td>Extra charges + break group</td><td><span class="badge success">Live</span></td></tr>
-                <tr><td class="linkish">Woop Metro Replenishment</td><td>Woop</td><td>4</td><td>Per stop + route flat</td><td>Accessorial group</td><td><span class="badge success">Live</span></td></tr>
+                <tr><td class="linkish" data-open-drawer="scheduledSummary">Medical North Island Shuttle</td><td>Zimmer Biomet NZ</td><td>3</td><td>Pickup + linehaul + delivery</td><td>Extra charges + break group</td><td><span class="badge success">Live</span></td></tr>
+                <tr><td class="linkish" data-open-drawer="scheduledSummary">Woop Metro Replenishment</td><td>Woop</td><td>4</td><td>Per stop + route flat</td><td>Accessorial group</td><td><span class="badge success">Live</span></td></tr>
               </tbody>
             </table>
           </div>
@@ -591,8 +591,8 @@ body { margin: 0; font-size: var(--text-md); line-height: var(--lh-norm); -webki
             <table>
               <thead><tr><th>Name</th><th>DC</th><th>Outbound basis</th><th>Clusters</th><th>Status</th></tr></thead>
               <tbody>
-                <tr><td class="linkish">South DC Grocery Outbound</td><td>Christchurch DC</td><td>Zone cluster</td><td>12</td><td><span class="badge success">Live</span></td></tr>
-                <tr><td class="linkish">Auckland Medical Bulk</td><td>East Tamaki Hub</td><td>Predetermined routes</td><td>8</td><td><span class="badge warning">Draft</span></td></tr>
+                <tr><td class="linkish" data-open-drawer="scheduledSummary">South DC Grocery Outbound</td><td>Christchurch DC</td><td>Zone cluster</td><td>12</td><td><span class="badge success">Live</span></td></tr>
+                <tr><td class="linkish" data-open-drawer="scheduledSummary">Auckland Medical Bulk</td><td>East Tamaki Hub</td><td>Predetermined routes</td><td>8</td><td><span class="badge warning">Draft</span></td></tr>
               </tbody>
             </table>
           </div>
@@ -614,7 +614,8 @@ body { margin: 0; font-size: var(--text-md); line-height: var(--lh-norm); -webki
               <div class="drawer-card">
                 <h3>List + drawer layer</h3>
                 <div class="review-list">
-                  <div class="review-item"><div class="review-dot" style="background: var(--success);"></div><div><strong>Use here for view/edit summary</strong><div class="body-sm">Template name, client, active schedules, legs/stops, pricing basis, linked extras, effective dates, status.</div></div></div>
+                  <div class="review-item"><div class="review-dot" style="background: var(--success);"></div><div><strong>Use here for read-only detail first</strong><div class="body-sm">Open a summary drawer for template name, client, active schedules, legs/stops, pricing basis, linked extras, effective dates, release state and missing links.</div></div></div>
+                  <div class="review-item"><div class="review-dot" style="background: var(--info, var(--c-cyan));"></div><div><strong>Edit stays in the drawer until complexity tips over</strong><div class="body-sm">Simple state changes, effective dates, release notes and dependency fixes can happen in-place before escalation.</div></div></div>
                   <div class="review-item"><div class="review-dot" style="background: var(--warning);"></div><div><strong>Good for governance actions</strong><div class="body-sm">Clone, archive, review dependencies, effective-date changes, release status.</div></div></div>
                 </div>
               </div>
@@ -622,6 +623,7 @@ body { margin: 0; font-size: var(--text-md); line-height: var(--lh-norm); -webki
                 <h3>Full builder layer</h3>
                 <div class="review-list">
                   <div class="review-item"><div class="review-dot" style="background: var(--info, var(--c-cyan));"></div><div><strong>Drop into Dane’s schedule work for setup</strong><div class="body-sm">Route legs, stop order, route clusters, service windows, per-stop/per-leg logic, bulk-route composition.</div></div></div>
+                  <div class="review-item"><div class="review-dot" style="background: var(--warning);"></div><div><strong>Clear handoff state matters</strong><div class="body-sm">Use an explicit “Open Dane’s full builder” handoff action with readiness status so operators know whether they are escalating by choice or because the template is incomplete.</div></div></div>
                   <div class="review-item"><div class="review-dot" style="background: var(--error);"></div><div><strong>Do not try to force this into a tiny modal</strong><div class="body-sm">Scheduled pricing has too much structure for the old popup pattern.</div></div></div>
                 </div>
               </div>
@@ -1047,10 +1049,10 @@ body { margin: 0; font-size: var(--text-md); line-height: var(--lh-norm); -webki
         <div class="drawer-sections" id="drawerContent"></div>
 
         <div class="drawer-actions">
-          <button class="pill-btn secondary">Save draft</button>
+          <button class="pill-btn secondary" id="drawerSecondaryAction">Save draft</button>
           <div class="right">
-            <button class="pill-btn ghost">Back</button>
-            <button class="pill-btn primary">Next step</button>
+            <button class="pill-btn ghost" id="drawerGhostAction">Back</button>
+            <button class="pill-btn primary" id="drawerPrimaryAction">Next step</button>
           </div>
         </div>
       </div>
@@ -1061,23 +1063,25 @@ body { margin: 0; font-size: var(--text-md); line-height: var(--lh-norm); -webki
     const ondemandZoneTable = `
       <thead><tr><th>Name</th><th>Client</th><th>Rate Card</th><th>Service</th><th>Vehicle</th><th>From Zone</th><th>To Zone</th><th>Rate</th><th>Driver</th><th>Fuel</th><th>Extra Charge</th></tr></thead>
       <tbody>
-        <tr><td class="linkish">AKL Central Same Day</td><td>OTG Cargo</td><td>Default Auckland Metro</td><td>Same Day</td><td>Van</td><td>CBD</td><td>Inner East</td><td>$18.00</td><td>$7.20</td><td>Yes</td><td>After-hours surcharge</td></tr>
-        <tr><td class="linkish">North Shore Priority</td><td>OTG Cargo</td><td>Default Auckland Metro</td><td>Priority</td><td>Car</td><td>North Shore</td><td>CBD</td><td>$22.00</td><td>$8.50</td><td>Yes</td><td>Critical uplift</td></tr>
-        <tr><td class="linkish">Airport to Manukau</td><td>Zimmer Biomet NZ</td><td>Medical Air Priority</td><td>Express</td><td>Van</td><td>Airport</td><td>South East</td><td>$24.50</td><td>$9.00</td><td>No</td><td>Medical Handling Bundle</td></tr>
+        <tr><td class="linkish" data-open-drawer="zoneDetail">AKL Central Same Day</td><td>OTG Cargo</td><td>Default Auckland Metro</td><td>Same Day</td><td>Van</td><td>CBD</td><td>Inner East</td><td>$18.00</td><td>$7.20</td><td>Yes</td><td>After-hours surcharge</td></tr>
+        <tr><td class="linkish" data-open-drawer="zoneDetail">North Shore Priority</td><td>OTG Cargo</td><td>Default Auckland Metro</td><td>Priority</td><td>Car</td><td>North Shore</td><td>CBD</td><td>$22.00</td><td>$8.50</td><td>Yes</td><td>Critical uplift</td></tr>
+        <tr><td class="linkish" data-open-drawer="zoneDetail">Airport to Manukau</td><td>Zimmer Biomet NZ</td><td>Medical Air Priority</td><td>Express</td><td>Van</td><td>Airport</td><td>South East</td><td>$24.50</td><td>$9.00</td><td>No</td><td>Medical Handling Bundle</td></tr>
       </tbody>`;
 
     const ondemandDistanceTable = `
       <thead><tr><th>Name</th><th>Client</th><th>Rate Card</th><th>Service</th><th>Vehicle</th><th>Incl. Dist</th><th>Base</th><th>Driver Base</th><th>Per Mile</th><th>Driver / Mile</th><th>Fuel</th></tr></thead>
       <tbody>
-        <tr><td class="linkish">Metro Express 0–15mi</td><td>OTG Cargo</td><td>Default Auckland Metro</td><td>Express</td><td>Van</td><td>5</td><td>$14.00</td><td>$6.00</td><td>$1.85</td><td>$0.68</td><td>Base + Distance</td></tr>
-        <tr><td class="linkish">Urgent Med 0–30mi</td><td>Zimmer Biomet NZ</td><td>Medical Air Priority</td><td>Critical</td><td>Car</td><td>3</td><td>$16.50</td><td>$6.90</td><td>$2.20</td><td>$0.82</td><td>Distance only</td></tr>
-        <tr><td class="linkish">Outer Metro 15–50mi</td><td>OTG Cargo</td><td>Default Auckland Metro</td><td>Same Day</td><td>Truck</td><td>8</td><td>$22.00</td><td>$9.40</td><td>$2.95</td><td>$1.08</td><td>Base + Distance</td></tr>
+        <tr><td class="linkish" data-open-drawer="zoneDetail">Metro Express 0–15mi</td><td>OTG Cargo</td><td>Default Auckland Metro</td><td>Express</td><td>Van</td><td>5</td><td>$14.00</td><td>$6.00</td><td>$1.85</td><td>$0.68</td><td>Base + Distance</td></tr>
+        <tr><td class="linkish" data-open-drawer="zoneDetail">Urgent Med 0–30mi</td><td>Zimmer Biomet NZ</td><td>Medical Air Priority</td><td>Critical</td><td>Car</td><td>3</td><td>$16.50</td><td>$6.90</td><td>$2.20</td><td>$0.82</td><td>Distance only</td></tr>
+        <tr><td class="linkish" data-open-drawer="zoneDetail">Outer Metro 15–50mi</td><td>OTG Cargo</td><td>Default Auckland Metro</td><td>Same Day</td><td>Truck</td><td>8</td><td>$22.00</td><td>$9.40</td><td>$2.95</td><td>$1.08</td><td>Base + Distance</td></tr>
       </tbody>`;
 
     const drawerTemplates = {
       zone: {
         title: 'New Zone Rate',
         subtitle: 'Build zone-to-zone on-demand pricing with linked components and review checks.',
+        stepper: true,
+        actions: { secondary: 'Save draft', ghost: 'Back', primary: 'Next step' },
         html: `
           <div class="drawer-card">
             <h3>Scope</h3>
@@ -1118,9 +1122,54 @@ body { margin: 0; font-size: var(--text-md); line-height: var(--lh-norm); -webki
             </div>
           </div>`
       },
+      zoneDetail: {
+        title: 'AKL Central Same Day',
+        subtitle: 'Read-only detail drawer keeps the commercial shape, linked components and release state visible before you decide to edit.',
+        stepper: false,
+        actions: { secondary: 'Duplicate', ghost: 'Close', primary: 'Edit in drawer' },
+        html: `
+          <div class="drawer-card">
+            <h3>Commercial summary</h3>
+            <div class="deps">
+              <div class="dep"><div><strong>Client</strong><span>OTG Cargo</span></div><span class="badge info">Same Day</span></div>
+              <div class="dep"><div><strong>Rate card</strong><span>Default Auckland Metro</span></div><span class="badge success">Active</span></div>
+              <div class="dep"><div><strong>Method</strong><span>Zone → Zone</span></div><span class="badge success">On-demand</span></div>
+              <div class="dep"><div><strong>Effective dates</strong><span>01 Jul 2026 → Open</span></div><span class="badge warning">Reviewable</span></div>
+            </div>
+          </div>
+          <div class="drawer-card">
+            <h3>Pricing detail</h3>
+            <div class="fields">
+              <div><div class="label">From zone</div><input class="input" value="CBD" readonly /></div>
+              <div><div class="label">To zone</div><input class="input" value="Inner East" readonly /></div>
+              <div><div class="label">Charge rate</div><input class="input" value="$18.00" readonly /></div>
+              <div><div class="label">Driver rate</div><input class="input" value="$7.20" readonly /></div>
+              <div><div class="label">Fuel behaviour</div><input class="input" value="Base + surcharge" readonly /></div>
+              <div><div class="label">Release note</div><input class="input" value="Current live metro baseline" readonly /></div>
+            </div>
+          </div>
+          <div class="drawer-card">
+            <h3>Linked components</h3>
+            <div class="deps">
+              <div class="dep"><div><strong>Extra charge</strong><span>After-hours surcharge</span></div><span class="badge success">Connected</span></div>
+              <div class="dep"><div><strong>Accessorial group</strong><span>Medical Handling Bundle</span></div><span class="badge warning">Optional</span></div>
+              <div class="dep"><div><strong>Zone health</strong><span>CBD and Inner East both mapped to the active metro set</span></div><span class="badge success">Healthy</span></div>
+              <div class="dep"><div><strong>Overlap warning</strong><span>2 seasonal variants exist on other date windows</span></div><span class="badge warning">Needs eyes</span></div>
+            </div>
+          </div>
+          <div class="drawer-card">
+            <h3>Why this helps</h3>
+            <div class="review-list">
+              <div class="review-item"><div class="review-dot" style="background: var(--success);"></div><div><strong>Missing detail is visible without committing to edit</strong><div class="body-sm">Operators can inspect the real commercial shape before opening a form state.</div></div></div>
+              <div class="review-item"><div class="review-dot" style="background: var(--warning);"></div><div><strong>Edit is a separate intent</strong><div class="body-sm">Prevents accidental state changes when someone only wants to review pricing context.</div></div></div>
+            </div>
+          </div>`
+      },
       flight: {
         title: 'New Flight Rate',
         subtitle: 'Air-freight setup with explicit break pricing and unit dependencies surfaced inline.',
+        stepper: true,
+        actions: { secondary: 'Save draft', ghost: 'Back', primary: 'Next step' },
         html: `
           <div class="drawer-card">
             <h3>Scope</h3>
@@ -1162,6 +1211,85 @@ body { margin: 0; font-size: var(--text-md); line-height: var(--lh-norm); -webki
               <div class="review-item"><div class="review-dot" style="background: var(--warning);"></div><div><strong>Consider templating</strong><div class="body-sm">Security surcharge matches 5 other rates and may be a candidate for reuse later.</div></div></div>
             </div>
           </div>`
+      },
+      scheduledSummary: {
+        title: 'Medical North Island Shuttle',
+        subtitle: 'Scheduled template summary stays light in the drawer, with a clear handoff into Dane’s full builder when route logic needs deeper editing.',
+        stepper: false,
+        actions: { secondary: 'Clone template', ghost: 'Close', primary: 'Edit summary' },
+        html: `
+          <div class="drawer-card">
+            <h3>Template summary</h3>
+            <div class="deps">
+              <div class="dep"><div><strong>Client</strong><span>Zimmer Biomet NZ</span></div><span class="badge success">Live</span></div>
+              <div class="dep"><div><strong>Template type</strong><span>Routed / Multi-leg</span></div><span class="badge info">3 legs</span></div>
+              <div class="dep"><div><strong>Pricing basis</strong><span>Pickup + linehaul + delivery</span></div><span class="badge success">Structured</span></div>
+              <div class="dep"><div><strong>Active schedules</strong><span>Weekday shuttle + urgent Saturday variant</span></div><span class="badge warning">2 attached</span></div>
+            </div>
+          </div>
+          <div class="drawer-card">
+            <h3>Commercial shape</h3>
+            <div class="fields">
+              <div><div class="label">Pickup leg</div><input class="input" value="Auckland hospital pickups" readonly /></div>
+              <div><div class="label">Linehaul leg</div><input class="input" value="AKL → WLG overnight linehaul" readonly /></div>
+              <div><div class="label">Delivery leg</div><input class="input" value="Wellington metro med delivery" readonly /></div>
+              <div><div class="label">Linked extras</div><input class="input" value="After-hours + medical handling" readonly /></div>
+              <div><div class="label">Effective dates</div><input class="input" value="01 Mar 2026 → Open" readonly /></div>
+              <div><div class="label">Release note</div><input class="input" value="North Island routed medical baseline" readonly /></div>
+            </div>
+          </div>
+          <div class="drawer-card">
+            <h3>Builder handoff</h3>
+            <div class="deps">
+              <div class="dep"><div><strong>Drawer coverage</strong><span>Release state, dates, dependencies, light edits</span></div><span class="badge success">Good here</span></div>
+              <div class="dep"><div><strong>Dane’s full builder</strong><span>Leg logic, stop order, route clusters, per-stop pricing and windows</span></div><span class="badge warning">Escalate when needed</span></div>
+              <div class="dep"><div><strong>Handoff state</strong><span id="handoffStateLabel">Ready to hand off with full context pack</span></div><span class="badge info" id="handoffStateBadge">Ready</span></div>
+            </div>
+            <div class="header-actions" style="justify-content:flex-start; margin-top:12px; gap:10px;">
+              <button class="pill-btn secondary" data-handoff-trigger="scheduled">Open Dane's full builder</button>
+              <button class="pill-btn ghost" data-open-drawer="scheduledEdit">Edit summary first</button>
+            </div>
+          </div>`
+      },
+      scheduledEdit: {
+        title: 'Edit Scheduled Template',
+        subtitle: 'Use the drawer for summary-level edits and dependency cleanup, then hand off cleanly into Dane’s richer builder when route composition gets heavy.',
+        stepper: true,
+        actions: { secondary: 'Save draft', ghost: 'Back to summary', primary: 'Open Dane\'s full builder' },
+        html: `
+          <div class="drawer-card">
+            <h3>Scope</h3>
+            <div class="fields">
+              <div><div class="label">Template name</div><input class="input" value="Medical North Island Shuttle" /></div>
+              <div><div class="label">Client</div><select><option>Zimmer Biomet NZ</option></select></div>
+              <div><div class="label">Template type</div><select><option>Routed / Multi-leg</option></select></div>
+              <div><div class="label">Status</div><select><option>Live</option><option>Draft</option></select></div>
+            </div>
+          </div>
+          <div class="drawer-card">
+            <h3>Summary controls</h3>
+            <div class="fields">
+              <div><div class="label">Pricing basis</div><input class="input" value="Pickup + linehaul + delivery" /></div>
+              <div><div class="label">Effective from</div><input class="input" value="01 Mar 2026" /></div>
+              <div><div class="label">Effective to</div><input class="input" value="Open" /></div>
+              <div class="field full"><div class="label">Release note</div><textarea rows="3">Adjusted Saturday urgent handling and confirmed all linked extras before handoff into the full builder.</textarea></div>
+            </div>
+          </div>
+          <div class="drawer-card">
+            <h3>Linked components</h3>
+            <div class="deps">
+              <div class="dep"><div><strong>Extra charges</strong><span>After-hours surcharge, medical handling</span></div><span class="badge success">Connected</span></div>
+              <div class="dep"><div><strong>Schedule links</strong><span>2 active schedules use this template</span></div><span class="badge success">Tracked</span></div>
+              <div class="dep"><div><strong>Route logic coverage</strong><span>Leg order and service windows still belong to Dane’s builder</span></div><span class="badge warning">Handoff required</span></div>
+            </div>
+          </div>
+          <div class="drawer-card">
+            <h3>Handoff readiness</h3>
+            <div class="review-list">
+              <div class="review-item"><div class="review-dot" style="background: var(--success);"></div><div><strong>Commercial context captured</strong><div class="body-sm">Name, release state, dates and notes can be finalised here first.</div></div></div>
+              <div class="review-item"><div class="review-dot" style="background: var(--warning);"></div><div><strong>Route build still escalates</strong><div class="body-sm">Once the summary is clean, use the explicit handoff button to continue in Dane’s builder.</div></div></div>
+            </div>
+          </div>`
       }
     };
 
@@ -1174,6 +1302,11 @@ body { margin: 0; font-size: var(--text-md); line-height: var(--lh-norm); -webki
     const drawerSubtitle = document.getElementById('drawerSubtitle');
     const ondemandSub = document.getElementById('ondemandSub');
     const ondemandTable = document.getElementById('ondemandTable');
+    const stepper = document.getElementById('stepper');
+    const drawerSecondaryAction = document.getElementById('drawerSecondaryAction');
+    const drawerGhostAction = document.getElementById('drawerGhostAction');
+    const drawerPrimaryAction = document.getElementById('drawerPrimaryAction');
+    let activeDrawerType = 'zone';
 
     function setView(name) {
       views.forEach(v => v.hidden = v.id !== 'view-' + name);
@@ -1182,13 +1315,33 @@ body { margin: 0; font-size: var(--text-md); line-height: var(--lh-norm); -webki
 
     function openDrawer(type) {
       const cfg = drawerTemplates[type] || drawerTemplates.zone;
+      activeDrawerType = type;
       drawerTitle.textContent = cfg.title;
       drawerSubtitle.textContent = cfg.subtitle;
       drawerContent.innerHTML = cfg.html;
+      stepper.style.display = cfg.stepper === false ? 'none' : 'grid';
+      drawerSecondaryAction.textContent = cfg.actions?.secondary || 'Save draft';
+      drawerGhostAction.textContent = cfg.actions?.ghost || 'Back';
+      drawerPrimaryAction.textContent = cfg.actions?.primary || 'Next step';
       app.classList.add('drawer-open');
     }
 
     function closeDrawer() { app.classList.remove('drawer-open'); }
+
+    function triggerHandoff(scope = 'scheduled') {
+      const badge = document.getElementById('handoffStateBadge');
+      const label = document.getElementById('handoffStateLabel');
+      if (badge) {
+        badge.textContent = 'Handed off';
+        badge.className = 'badge success';
+      }
+      if (label) {
+        label.textContent = "Context packed and sent into Dane's full builder for route-level editing";
+      }
+      if (scope === 'scheduled') {
+        openDrawer('scheduledSummary');
+      }
+    }
 
     ondemandSub.addEventListener('change', () => {
       ondemandTable.innerHTML = ondemandSub.value === 'distance' ? ondemandDistanceTable : ondemandZoneTable;
@@ -1202,6 +1355,27 @@ body { margin: 0; font-size: var(--text-md); line-height: var(--lh-norm); -webki
     document.querySelectorAll('[data-view-jump]').forEach(el => el.addEventListener('click', () => setView(el.dataset.viewJump)));
     document.querySelectorAll('.open-zone-drawer, #newRateBtn').forEach(el => el.addEventListener('click', () => openDrawer('zone')));
     document.querySelectorAll('.open-flight-drawer').forEach(el => el.addEventListener('click', () => openDrawer('flight')));
+    document.addEventListener('click', (event) => {
+      const drawerTrigger = event.target.closest('[data-open-drawer]');
+      if (drawerTrigger) {
+        openDrawer(drawerTrigger.dataset.openDrawer);
+        return;
+      }
+
+      const handoffTrigger = event.target.closest('[data-handoff-trigger]');
+      if (handoffTrigger) {
+        triggerHandoff(handoffTrigger.dataset.handoffTrigger);
+      }
+    });
+    drawerPrimaryAction.addEventListener('click', () => {
+      if (activeDrawerType === 'zoneDetail') return openDrawer('zone');
+      if (activeDrawerType === 'scheduledSummary') return openDrawer('scheduledEdit');
+      if (activeDrawerType === 'scheduledEdit') return triggerHandoff('scheduled');
+    });
+    drawerGhostAction.addEventListener('click', () => {
+      if (activeDrawerType === 'scheduledEdit') return openDrawer('scheduledSummary');
+      closeDrawer();
+    });
     document.getElementById('closeDrawer').addEventListener('click', closeDrawer);
   </script>
 </body>

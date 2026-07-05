@@ -1,7 +1,21 @@
 # Rating Rewrite — Screen-by-Screen Spec
 
 ## Goal
-Create one coherent **System → Rating** module in Configurator that brings together:
+Fold the rating rebuild into the agreed **Business** menu structure Kerran is starting from, rather than treating it as a separate **System → Rating** module.
+
+Target structure:
+- **Business**
+  - **Clients / Customers**
+    - row click opens the Client modal
+  - **Pricing & Rating**
+  - **Rate Codes**
+  - **Pricing**
+  - **Territory / rating support data**
+  - **schedule-linked rating behaviour**
+
+The induction/import layer should build on the fact that the current system already supports **rate download and upload for editing**. The new part is the AI-assisted interpretation and structure-matching layer on top.
+
+Within that structure, bring together:
 
 - current **Business → Rates**
   - Zone Rates
@@ -27,8 +41,9 @@ The rewrite should use the existing product pattern of:
 
 ## Proposed left nav
 
-### System
-- Rating
+### Business
+- Clients / Customers
+- Pricing & Rating
   - Overview
   - Rate Cards
   - On-Demand
@@ -36,9 +51,6 @@ The rewrite should use the existing product pattern of:
     - Distance Rates
   - Air Freight
     - Flight Rates
-  - Scheduled / Routed
-    - Routed / Multi-leg
-    - Bulk Distribution
   - Charges & Accessorials
     - Extra Charges
     - Accessorial Groups
@@ -46,7 +58,17 @@ The rewrite should use the existing product pattern of:
     - Break Types
     - Break Groups
   - Units & Measures
-  - Service Rating Setup
+- Rate Codes
+- Pricing
+- Territory / rating support data
+- schedule-linked rating behaviour
+  - Routed / Multi-leg
+  - Bulk Distribution
+- Rating Induction / Import
+  - Upload & intent
+  - AI structure match
+  - Mapping review
+  - Draft output / publish
 
 ---
 
@@ -60,6 +82,12 @@ The rewrite should use the existing product pattern of:
 
 ### B. Rate setup drawer pattern
 Because rating setup has many linked parts, every add/edit drawer should use progress steps.
+
+Also split drawer intent clearly:
+- **Read-only detail drawer first** when opening an existing item from a list
+- **Edit drawer state second** only after the operator explicitly chooses to edit
+- keep the edit state in-drawer for normal commercial changes
+- escalate to a full-screen builder only when structure complexity genuinely demands it
 
 ## Standard progress steps
 1. **Scope**
@@ -118,10 +146,11 @@ Overview cards:
 - Rate Cards
 - On-Demand Rates
 - Air Freight Rates
-- Scheduled / Routed
+- Rating Induction / Import
+- schedule-linked rating behaviour
 - Charges & Accessorials
 - Break Pricing
-- Service Rating Setup
+- Territory / rating support data
 
 Each card shows:
 - active count
@@ -142,6 +171,165 @@ Drawer opens on card click and shows:
 - Add Flight Rate
 - Open Routed Builder
 - Add Extra Charge
+
+---
+
+## 2A. Rating Induction / Import
+### Purpose
+Help new tenants bring spreadsheet-based pricing into DFRNT using the current download/upload workflow as a base, plus an AI-assisted matching layer.
+
+### Centre layout
+Two-stage review pattern:
+- upload + natural-language intent
+- AI structure match + mapping/review
+
+### Key requirement
+The user must be able to provide a **natural language description of the intended use of the uploaded spreadsheet**.
+
+Example prompt field:
+- “This workbook contains current same-day courier zone and distance pricing plus one air-freight sheet. Recreate the current commercial logic as closely as possible in DFRNT and treat after-hours as reusable charges.”
+
+### Core sections
+#### A. Upload & intent
+- workbook upload
+- source type
+- import mode
+- natural-language intent / business description
+
+#### B. Current-system bridge
+- existing download capability
+- existing upload capability
+- AI induction sits on top of, rather than replaces, raw spreadsheet import
+
+#### C. AI structure match
+Show ranked candidate structures such as:
+- On-Demand → Zone Rates
+- On-Demand → Distance Rates
+- Air Freight → Flight Rates
+- schedule-linked rating behaviour
+
+Each match should show:
+- confidence
+- short explanation of why it matched
+- accept / review / ignore
+
+#### D. Mapping & review
+Entity-level confidence for:
+- services
+- vehicles
+- zones
+- extra charges
+- units
+- break groups
+
+#### E. Row-level mapping review
+Show a source-to-target table with:
+- source sheet / row reference
+- detected meaning
+- matched DFRNT target structure
+- confidence
+- issue / ambiguity
+- accept / remap / ignore
+
+This is the screen that makes the induction process auditable and trustworthy instead of “AI magic”.
+
+#### F. Exceptions & unresolved items
+Show a dedicated exception screen for:
+- zone-name mismatches
+- vehicle alias conflicts
+- free-text notes that may need to become extra charges
+- rows with insufficient structure to classify safely
+
+Operator actions should include:
+- create alias
+- exclude row
+- force target structure
+
+#### G. Draft output / publish readiness
+Show:
+- draft rate cards
+- draft rates generated
+- rows requiring manual review
+- publish lock until human sign-off
+
+Also show explicit state such as:
+- safe to save draft
+- ready for internal review
+- blocked from publish
+
+#### H. Source vs generated output
+Show a side-by-side proof screen:
+- source workbook meaning on the left
+- generated DFRNT draft entities on the right
+
+Purpose:
+- build trust in the interpretation
+- help operators spot bad mappings quickly
+- make approval easier for Steve/Kerran before publish
+
+#### I. Alias / remap workflow
+Support fast operator normalisation for things like:
+- vehicle aliases
+- zone aliases
+- service-name cleanup
+
+Fields/actions:
+- source label
+- detected type
+- map to existing entity
+- create alias / force remap / one-off override
+- reason note
+
+The outcome should be reusable in future induction runs for that tenant.
+
+#### J. Induction run history & audit
+Show prior runs with:
+- run id
+- workbook name
+- result state (draft saved / published / abandoned)
+- overrides count
+- published by / when
+- open audit action
+
+This becomes the operational memory of how a tenant’s pricing was inducted.
+
+#### K. Final review & publish workflow
+Add a dedicated final-stage screen for controlled release of inducted pricing.
+
+Core fields:
+- draft version name
+- release mode
+- effective start / end dates
+- supersede existing rate-card version or not
+- rollback window
+- release note
+
+Reviewer state should show:
+- primary reviewer
+- business owner approval
+- resolved dependencies
+- residual exclusions / follow-up items
+
+#### L. Activation, supersede & rollback
+The final screen should make activation explicit and reversible.
+
+Must show:
+- what existing live version will be superseded
+- that old versions are archived, not deleted
+- what rows are excluded from this release
+- what the rollback target is
+- what approvals are still required before publish
+
+Final actions:
+- save review pack
+- request approval
+- publish when approved
+
+### Product principles
+- never pretend certainty when confidence is low
+- explain why a structure was chosen
+- keep source traceability to workbook/sheet/row where possible
+- generate drafts first, not live pricing
 
 ---
 
@@ -421,7 +609,16 @@ Summary drawer only:
 - pricing summary
 - linked services
 - component health
-- open full editor button
+- release / effective-date state
+- explicit **Open Dane's full builder** handoff button
+
+The scheduled drawer should have two states:
+1. **Read-only template summary**
+   - inspect route shape, dependencies, dates, linked schedules and release context
+2. **Edit summary state**
+   - allow light metadata / dependency edits before escalation
+
+This closes the “missing detail” gap without trying to cram full route composition into the drawer.
 
 ### Full editor
 This should open the richer scheduled-rating builder.
@@ -465,7 +662,8 @@ Summary drawer:
 - inbound pricing summary
 - outbound pricing summary
 - postcode/zone grouping summary
-- open full editor
+- handoff readiness state
+- explicit **Open Dane's full builder** button
 
 ### Full editor steps
 1. Scope
