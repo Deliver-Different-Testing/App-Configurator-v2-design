@@ -653,9 +653,9 @@ body { margin: 0; font-size: var(--text-md); line-height: var(--lh-norm); -webki
             <table>
               <thead><tr><th>Name</th><th>Type</th><th>Unit</th><th>Calculation</th><th>Available at</th><th>Active</th></tr></thead>
               <tbody>
-                <tr><td class="linkish">After-hours surcharge</td><td>Flat</td><td>Job</td><td>$18.00 min</td><td>Booking / Dispatch</td><td><span class="badge success">Active</span></td></tr>
-                <tr><td class="linkish">Wait time</td><td>Per unit</td><td>Minute</td><td>$1.25 / min after 15 free</td><td>Dispatch / Courier</td><td><span class="badge success">Active</span></td></tr>
-                <tr><td class="linkish">Remote area uplift</td><td>Percentage</td><td>Job total</td><td>4%</td><td>Booking</td><td><span class="badge warning">Scoped</span></td></tr>
+                <tr><td class="linkish" data-open-drawer="chargeDetail">After-hours surcharge</td><td>Flat</td><td>Job</td><td>$18.00 min</td><td>Booking / Dispatch</td><td><span class="badge success">Active</span></td></tr>
+                <tr><td class="linkish" data-open-drawer="chargeDetail">Wait time</td><td>Per unit</td><td>Minute</td><td>$1.25 / min after 15 free</td><td>Dispatch / Courier</td><td><span class="badge success">Active</span></td></tr>
+                <tr><td class="linkish" data-open-drawer="chargeDetail">Remote area uplift</td><td>Percentage</td><td>Job total</td><td>4%</td><td>Booking</td><td><span class="badge warning">Scoped</span></td></tr>
               </tbody>
             </table>
           </div>
@@ -1325,6 +1325,110 @@ body { margin: 0; font-size: var(--text-md); line-height: var(--lh-norm); -webki
             </div>
           </div>`
       },
+      chargeDetail: {
+        title: '502 Vast Extra Charges',
+        subtitle: 'Read-only extra-charge summary first, with the full System-style field set available in the right-hand drawer when you switch to edit.',
+        stepper: false,
+        actions: { secondary: 'Duplicate charge', ghost: 'Close', primary: 'Edit extra charge' },
+        html: `
+          <div class="drawer-card">
+            <h3>Charge summary</h3>
+            <div class="deps">
+              <div class="dep"><div><strong>Client</strong><span>All clients</span></div><span class="badge success">Active</span></div>
+              <div class="dep"><div><strong>Rate card</strong><span>Global / reusable</span></div><span class="badge info">Shared</span></div>
+              <div class="dep"><div><strong>Charge families</strong><span>Weight, wait time, extra stop, after hours, holiday, pickup, items, cubes</span></div><span class="badge warning">Wide scope</span></div>
+              <div class="dep"><div><strong>Fuel behaviour</strong><span>Per-line toggles by charge type</span></div><span class="badge success">Supported</span></div>
+            </div>
+          </div>
+          <div class="drawer-card">
+            <h3>Current extra-charge setup</h3>
+            <div class="fields">
+              <div><div class="label">Weight extra</div><input class="input" value="$2.50" readonly /></div>
+              <div><div class="label">Weight excess (driver)</div><input class="input" value="$1.25" readonly /></div>
+              <div><div class="label">Wait time included</div><input class="input" value="15 min" readonly /></div>
+              <div><div class="label">Wait time excess</div><input class="input" value="$1.25 / min" readonly /></div>
+              <div><div class="label">Extra stop charge</div><input class="input" value="$27.50" readonly /></div>
+              <div><div class="label">Extra stop driver pay</div><input class="input" value="$18.00" readonly /></div>
+              <div><div class="label">After hours</div><input class="input" value="$18.50" readonly /></div>
+              <div><div class="label">Holiday charge</div><input class="input" value="$43.50" readonly /></div>
+            </div>
+          </div>
+          <div class="drawer-card">
+            <h3>Why this should be a drawer</h3>
+            <div class="review-list">
+              <div class="review-item"><div class="review-dot" style="background: var(--success);"></div><div><strong>Large field set fits the right-hand pattern</strong><div class="body-sm">Too many fields for a tiny popup, especially once driver-pay and fuel toggles are included.</div></div></div>
+              <div class="review-item"><div class="review-dot" style="background: var(--warning);"></div><div><strong>Detail first prevents accidental edits</strong><div class="body-sm">Operators can inspect the current charge matrix before opening the editable form.</div></div></div>
+            </div>
+          </div>`
+      },
+      chargeEdit: {
+        title: 'Edit Extra Charges',
+        subtitle: 'Use the right-hand drawer for the full extra-charge matrix rather than a legacy popup.',
+        stepper: true,
+        actions: { secondary: 'Save draft', ghost: 'Back to detail', primary: 'Save changes' },
+        html: `
+          <div class="drawer-card">
+            <h3>Scope</h3>
+            <div class="fields">
+              <div><div class="label">Name</div><input class="input" value="502 Vast Extra Charges" /></div>
+              <div><div class="label">Client</div><select><option>Select a client</option></select></div>
+              <div><div class="label">Rate Card</div><select><option>Select a Rate Card</option></select></div>
+              <div><div class="label">Status</div><select><option>Active</option><option>Draft</option></select></div>
+            </div>
+          </div>
+          <div class="drawer-card">
+            <h3>Weight Charges</h3>
+            <div class="fields">
+              <div><div class="label">Mode</div><select><option>Custom</option><option>Breaks</option></select></div>
+              <div><div class="label">Weight included</div><input class="input" value="5" /></div>
+              <div><div class="label">Weight excess</div><input class="input" value="$2.50" /></div>
+              <div><div class="label">Weight excess (driver pay)</div><input class="input" value="$1.25" /></div>
+            </div>
+          </div>
+          <div class="drawer-card">
+            <h3>Wait Time + Stops</h3>
+            <div class="fields">
+              <div><div class="label">Wait time included</div><input class="input" value="15" /></div>
+              <div><div class="label">Wait time interval</div><input class="input" value="Min" /></div>
+              <div><div class="label">Wait time excess</div><input class="input" value="$1.25" /></div>
+              <div><div class="label">Wait time driver pay</div><input class="input" value="$0.80" /></div>
+              <div><div class="label">Extra stop charge</div><input class="input" value="$27.50" /></div>
+              <div><div class="label">Extra stop driver pay</div><input class="input" value="$18.00" /></div>
+            </div>
+          </div>
+          <div class="drawer-card">
+            <h3>After Hours + Holiday</h3>
+            <div class="fields">
+              <div><div class="label">After hours charge</div><input class="input" value="$18.50" /></div>
+              <div><div class="label">After hours driver pay</div><input class="input" value="$15.00" /></div>
+              <div><div class="label">Holiday charge</div><input class="input" value="$43.50" /></div>
+              <div><div class="label">Holiday driver pay</div><input class="input" value="$27.50" /></div>
+            </div>
+          </div>
+          <div class="drawer-card">
+            <h3>Items, Cubes, Dry Ice and DG</h3>
+            <div class="fields">
+              <div><div class="label">Items mode</div><select><option>Custom</option><option>Breaks</option></select></div>
+              <div><div class="label">Items included</div><input class="input" value="1" /></div>
+              <div><div class="label">Items excess</div><input class="input" value="$1.00" /></div>
+              <div><div class="label">Items driver pay</div><input class="input" value="$0.40" /></div>
+              <div><div class="label">Cubes mode</div><select><option>Custom</option><option>Breaks</option></select></div>
+              <div><div class="label">Cubes excess</div><input class="input" value="$3.00" /></div>
+              <div><div class="label">Dry ice charge</div><input class="input" value="$10.00" /></div>
+              <div><div class="label">DG charge</div><input class="input" value="$10.00" /></div>
+              <div><div class="label">Pickup hold charge</div><input class="input" value="$5.00" /></div>
+            </div>
+          </div>
+          <div class="drawer-card">
+            <h3>Fuel toggles + review</h3>
+            <div class="deps">
+              <div class="dep"><div><strong>Apply weight fuel</strong><span>Enabled</span></div><span class="badge success">On</span></div>
+              <div class="dep"><div><strong>Apply wait time fuel</strong><span>Disabled</span></div><span class="badge info">Off</span></div>
+              <div class="dep"><div><strong>Apply extra stop fuel</strong><span>Enabled</span></div><span class="badge success">On</span></div>
+              <div class="dep"><div><strong>Apply holiday fuel</strong><span>Enabled</span></div><span class="badge success">On</span></div>
+            </div>
+          </div>`
+      },
       flight: {
         title: 'New Flight Rate',
         subtitle: 'Use the same right-hand drawer pattern as zone rates, but with the richer airfreight fields and lookup/filter context surfaced inline.',
@@ -1577,11 +1681,13 @@ body { margin: 0; font-size: var(--text-md); line-height: var(--lh-norm); -webki
     drawerPrimaryAction.addEventListener('click', () => {
       if (activeDrawerType === 'zoneDetail') return openDrawer('zone');
       if (activeDrawerType === 'rateCardDetail') return openDrawer('rateCardEdit');
+      if (activeDrawerType === 'chargeDetail') return openDrawer('chargeEdit');
       if (activeDrawerType === 'scheduledSummary') return openDrawer('scheduledEdit');
       if (activeDrawerType === 'scheduledEdit') return triggerHandoff('scheduled');
     });
     drawerGhostAction.addEventListener('click', () => {
       if (activeDrawerType === 'rateCardEdit') return openDrawer('rateCardDetail');
+      if (activeDrawerType === 'chargeEdit') return openDrawer('chargeDetail');
       if (activeDrawerType === 'scheduledEdit') return openDrawer('scheduledSummary');
       closeDrawer();
     });
