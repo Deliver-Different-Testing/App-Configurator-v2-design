@@ -1295,21 +1295,40 @@ body { margin: 0; font-size: var(--text-md); line-height: var(--lh-norm); -webki
             </div>
           </div>
           <div class="drawer-card">
+            <h3>Operational summary</h3>
+            <div class="fields">
+              <div><div class="label">Booking mode</div><input class="input" value="Window" readonly /></div>
+              <div><div class="label">Operating days</div><input class="input" value="Mon, Tue, Wed, Thu, Fri" readonly /></div>
+              <div><div class="label">Origin depot</div><input class="input" value="Auckland Hub" readonly /></div>
+              <div><div class="label">Destination depot</div><input class="input" value="Wellington Hub" readonly /></div>
+              <div><div class="label">Cutoff</div><input class="input" value="4 hours before collection" readonly /></div>
+              <div><div class="label">Client overrides</div><input class="input" value="2 active overrides" readonly /></div>
+            </div>
+          </div>
+          <div class="drawer-card">
             <h3>Commercial shape</h3>
             <div class="fields">
-              <div><div class="label">Pickup leg</div><input class="input" value="Auckland hospital pickups" readonly /></div>
-              <div><div class="label">Linehaul leg</div><input class="input" value="AKL → WLG overnight linehaul" readonly /></div>
-              <div><div class="label">Delivery leg</div><input class="input" value="Wellington metro med delivery" readonly /></div>
+              <div><div class="label">Collection leg</div><input class="input" value="Pickup source: customer address · window 14:00–16:00" readonly /></div>
+              <div><div class="label">Linehaul leg</div><input class="input" value="AKL → WLG overnight linehaul · insert to bulk" readonly /></div>
+              <div><div class="label">Delivery leg</div><input class="input" value="Wellington metro delivery zones with route speed applied" readonly /></div>
               <div><div class="label">Linked extras</div><input class="input" value="After-hours + medical handling" readonly /></div>
               <div><div class="label">Effective dates</div><input class="input" value="01 Mar 2026 → Open" readonly /></div>
               <div><div class="label">Release note</div><input class="input" value="North Island routed medical baseline" readonly /></div>
             </div>
           </div>
           <div class="drawer-card">
+            <h3>What stays in Dane's builder</h3>
+            <div class="review-list">
+              <div class="review-item"><div class="review-dot" style="background: var(--info, var(--c-cyan));"></div><div><strong>Chain builder + leg config</strong><div class="body-sm">Collection, depot, linehaul and delivery leg setup with pickup source, zones, speeds and timing logic.</div></div></div>
+              <div class="review-item"><div class="review-dot" style="background: var(--info, var(--c-cyan));"></div><div><strong>Operating schedule + timeline preview</strong><div class="body-sm">Day-by-day schedule windows, cutoff editing and back-calculation live in the full editor.</div></div></div>
+              <div class="review-item"><div class="review-dot" style="background: var(--warning);"></div><div><strong>Booking simulator + client overrides</strong><div class="body-sm">Simulation and per-client override editing belong to the full-screen workflow, not the lightweight summary drawer.</div></div></div>
+            </div>
+          </div>
+          <div class="drawer-card">
             <h3>Builder handoff</h3>
             <div class="deps">
-              <div class="dep"><div><strong>Drawer coverage</strong><span>Release state, dates, dependencies, light edits</span></div><span class="badge success">Good here</span></div>
-              <div class="dep"><div><strong>Dane’s full builder</strong><span>Leg logic, stop order, route clusters, per-stop pricing and windows</span></div><span class="badge warning">Escalate when needed</span></div>
+              <div class="dep"><div><strong>Drawer coverage</strong><span>Route summary, depots, days, cutoff, overrides count, release state</span></div><span class="badge success">Good here</span></div>
+              <div class="dep"><div><strong>Dane’s full builder</strong><span>Leg logic, zones, timings, simulator, override editing</span></div><span class="badge warning">Escalate when needed</span></div>
               <div class="dep"><div><strong>Handoff state</strong><span id="handoffStateLabel">Ready to hand off with full context pack</span></div><span class="badge info" id="handoffStateBadge">Ready</span></div>
             </div>
             <div class="header-actions" style="justify-content:flex-start; margin-top:12px; gap:10px;">
@@ -1336,9 +1355,12 @@ body { margin: 0; font-size: var(--text-md); line-height: var(--lh-norm); -webki
           <div class="drawer-card">
             <h3>Summary controls</h3>
             <div class="fields">
+              <div><div class="label">Booking mode</div><select><option>Window</option><option>Fixed time</option></select></div>
+              <div><div class="label">Operating days</div><input class="input" value="Mon, Tue, Wed, Thu, Fri" /></div>
               <div><div class="label">Pricing basis</div><input class="input" value="Pickup + linehaul + delivery" /></div>
               <div><div class="label">Effective from</div><input class="input" value="01 Mar 2026" /></div>
               <div><div class="label">Effective to</div><input class="input" value="Open" /></div>
+              <div><div class="label">Cutoff rule</div><input class="input" value="4 hours before collection" /></div>
               <div class="field full"><div class="label">Release note</div><textarea rows="3">Adjusted Saturday urgent handling and confirmed all linked extras before handoff into the full builder.</textarea></div>
             </div>
           </div>
@@ -1347,7 +1369,8 @@ body { margin: 0; font-size: var(--text-md); line-height: var(--lh-norm); -webki
             <div class="deps">
               <div class="dep"><div><strong>Extra charges</strong><span>After-hours surcharge, medical handling</span></div><span class="badge success">Connected</span></div>
               <div class="dep"><div><strong>Schedule links</strong><span>2 active schedules use this template</span></div><span class="badge success">Tracked</span></div>
-              <div class="dep"><div><strong>Route logic coverage</strong><span>Leg order and service windows still belong to Dane’s builder</span></div><span class="badge warning">Handoff required</span></div>
+              <div class="dep"><div><strong>Origin / destination depots</strong><span>Auckland Hub → Wellington Hub</span></div><span class="badge success">Tracked</span></div>
+              <div class="dep"><div><strong>Route logic coverage</strong><span>Leg order, zones, service windows and simulator still belong to Dane’s builder</span></div><span class="badge warning">Handoff required</span></div>
             </div>
           </div>
           <div class="drawer-card">
