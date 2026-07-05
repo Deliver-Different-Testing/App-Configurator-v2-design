@@ -572,29 +572,35 @@ body { margin: 0; font-size: var(--text-md); line-height: var(--lh-norm); -webki
 
       <section class="view" id="view-routed" hidden>
         <div class="page-header">
-          <div><h1>schedule-linked rating behaviour</h1><p>Scheduled rates live under Business as their own sibling area. Use drawer summaries here, then drop into Dane’s richer route builder for multi-leg, bulk-distribution and other schedule-linked pricing complexity.</p></div>
-          <div class="header-actions"><button class="pill-btn secondary" data-handoff-trigger="scheduled">Open Dane's full builder</button><button class="pill-btn primary" data-open-drawer="scheduledEdit">+ New routed template</button></div>
+          <div><h1>schedule-linked rating behaviour</h1><p>Lift Dane’s actual schedules workflow into the Business IA: table first, then a full-screen schedule editor for chain builder, legs, operating schedule, timeline, simulator and client overrides.</p></div>
+          <div class="header-actions"><button class="pill-btn secondary" data-handoff-trigger="scheduled">Open full-screen schedule editor</button><button class="pill-btn primary" data-open-drawer="scheduledEdit">+ New schedule</button></div>
+        </div>
+        <div class="tabs" style="margin-bottom:14px;">
+          <button class="tab active">Schedules</button>
+          <button class="tab">Schedule Groups</button>
         </div>
         <div class="split-grid">
           <div class="panel">
-            <div class="panel-header"><div><h3>Routed / multi-leg</h3><p>Pickup, linehaul and delivery broken into explicit legs.</p></div></div>
+            <div class="panel-header"><div><h3>Schedules table</h3><p>This mirrors Dane’s real list-first entry point before opening the full-screen editor.</p></div><span class="badge success">Real flow</span></div>
             <table>
-              <thead><tr><th>Name</th><th>Client</th><th>Legs</th><th>Pricing basis</th><th>Linked comps</th><th>Active</th></tr></thead>
+              <thead><tr><th>Name</th><th>Days</th><th>Origin</th><th>Dest</th><th>LH</th><th>Speed</th><th>Mode</th><th>Status</th></tr></thead>
               <tbody>
-                <tr><td class="linkish" data-open-drawer="scheduledSummary">Medical North Island Shuttle</td><td>Zimmer Biomet NZ</td><td>3</td><td>Pickup + linehaul + delivery</td><td>Extra charges + break group</td><td><span class="badge success">Live</span></td></tr>
-                <tr><td class="linkish" data-open-drawer="scheduledSummary">Woop Metro Replenishment</td><td>Woop</td><td>4</td><td>Per stop + route flat</td><td>Accessorial group</td><td><span class="badge success">Live</span></td></tr>
+                <tr><td class="linkish" data-open-drawer="scheduledSummary">Medical North Island Shuttle</td><td>Mon–Fri</td><td>Auckland Hub</td><td>Wellington Hub</td><td>✓</td><td>Air Express</td><td>Window</td><td><span class="badge success">Active</span></td></tr>
+                <tr><td class="linkish" data-open-drawer="scheduledSummary">Woop Metro Replenishment</td><td>Mon–Sat</td><td>East Tamaki</td><td>South DC</td><td>✓</td><td>Bulk Route</td><td>Fixed</td><td><span class="badge success">Active</span></td></tr>
+                <tr><td class="linkish" data-open-drawer="scheduledSummary">Auckland Medical Bulk</td><td>Mon–Fri</td><td>East Tamaki</td><td>Regional Drops</td><td>✕</td><td>Metro Van</td><td>Window</td><td><span class="badge warning">Draft</span></td></tr>
               </tbody>
             </table>
           </div>
           <div class="panel">
-            <div class="panel-header"><div><h3>Bulk distribution</h3><p>Hub/DC inbound plus outbound postcode clusters.</p></div></div>
-            <table>
-              <thead><tr><th>Name</th><th>DC</th><th>Outbound basis</th><th>Clusters</th><th>Status</th></tr></thead>
-              <tbody>
-                <tr><td class="linkish" data-open-drawer="scheduledSummary">South DC Grocery Outbound</td><td>Christchurch DC</td><td>Zone cluster</td><td>12</td><td><span class="badge success">Live</span></td></tr>
-                <tr><td class="linkish" data-open-drawer="scheduledSummary">Auckland Medical Bulk</td><td>East Tamaki Hub</td><td>Predetermined routes</td><td>8</td><td><span class="badge warning">Draft</span></td></tr>
-              </tbody>
-            </table>
+            <div class="panel-header"><div><h3>Editor sections lifted from Dane</h3><p>These are the real heavy-edit areas that live in the full-screen schedule editor, not a lightweight drawer.</p></div><span class="badge info">Modal editor</span></div>
+            <div class="component-list" style="padding: 14px;">
+              <div class="component-item"><div><h4>Chain Builder</h4><p>Build the route chain visually and select which leg is active for detailed editing.</p></div><span class="badge success">Primary</span></div>
+              <div class="component-item"><div><h4>Leg Config Panel</h4><p>Collection, depot, linehaul and delivery setup including zones, speeds, pickup source and timing rules.</p></div><span class="badge success">Primary</span></div>
+              <div class="component-item"><div><h4>Operating Schedule</h4><p>Day-by-day enabled state, times and cutoff logic.</p></div><span class="badge success">Primary</span></div>
+              <div class="component-item"><div><h4>Timeline Preview</h4><p>Shows schedule timing and cutoff behaviour back-calculated across the route.</p></div><span class="badge info">Preview</span></div>
+              <div class="component-item"><div><h4>Booking Simulator</h4><p>Tests whether a job would match this schedule based on zones, days and times.</p></div><span class="badge warning">Advanced</span></div>
+              <div class="component-item"><div><h4>Client Overrides</h4><p>Override the base schedule per client without duplicating the whole structure blindly.</p></div><span class="badge warning">Advanced</span></div>
+            </div>
           </div>
         </div>
 
@@ -609,22 +615,22 @@ body { margin: 0; font-size: var(--text-md); line-height: var(--lh-norm); -webki
           </div>
 
           <div class="panel">
-            <div class="panel-header"><div><h3>Dane builder handoff</h3><p>Separate the browse/review layer from the actual scheduled-rate construction workflow.</p></div></div>
+            <div class="panel-header"><div><h3>How the drawer fits now</h3><p>The drawer becomes a light review / governance layer in front of Dane’s real editor, not a replacement for it.</p></div></div>
             <div class="drawer-sections" style="padding:16px;">
               <div class="drawer-card">
                 <h3>List + drawer layer</h3>
                 <div class="review-list">
-                  <div class="review-item"><div class="review-dot" style="background: var(--success);"></div><div><strong>Use here for read-only detail first</strong><div class="body-sm">Open a summary drawer for template name, client, active schedules, legs/stops, pricing basis, linked extras, effective dates, release state and missing links.</div></div></div>
-                  <div class="review-item"><div class="review-dot" style="background: var(--info, var(--c-cyan));"></div><div><strong>Edit stays in the drawer until complexity tips over</strong><div class="body-sm">Simple state changes, effective dates, release notes and dependency fixes can happen in-place before escalation.</div></div></div>
-                  <div class="review-item"><div class="review-dot" style="background: var(--warning);"></div><div><strong>Good for governance actions</strong><div class="body-sm">Clone, archive, review dependencies, effective-date changes, release status.</div></div></div>
+                  <div class="review-item"><div class="review-dot" style="background: var(--success);"></div><div><strong>Read-only detail first</strong><div class="body-sm">Route summary, depots, days, cutoff, override count, release state, linked extras and health.</div></div></div>
+                  <div class="review-item"><div class="review-dot" style="background: var(--info, var(--c-cyan));"></div><div><strong>Only light edits stay here</strong><div class="body-sm">Status, dates, release notes and dependency fixes can happen in the drawer before escalation.</div></div></div>
+                  <div class="review-item"><div class="review-dot" style="background: var(--warning);"></div><div><strong>Good for governance</strong><div class="body-sm">Clone, archive, review dependencies, effective-date changes, release status.</div></div></div>
                 </div>
               </div>
               <div class="drawer-card">
                 <h3>Full builder layer</h3>
                 <div class="review-list">
-                  <div class="review-item"><div class="review-dot" style="background: var(--info, var(--c-cyan));"></div><div><strong>Drop into Dane’s schedule work for setup</strong><div class="body-sm">Route legs, stop order, route clusters, service windows, per-stop/per-leg logic, bulk-route composition.</div></div></div>
-                  <div class="review-item"><div class="review-dot" style="background: var(--warning);"></div><div><strong>Clear handoff state matters</strong><div class="body-sm">Use an explicit “Open Dane’s full builder” handoff action with readiness status so operators know whether they are escalating by choice or because the template is incomplete.</div></div></div>
-                  <div class="review-item"><div class="review-dot" style="background: var(--error);"></div><div><strong>Do not try to force this into a tiny modal</strong><div class="body-sm">Scheduled pricing has too much structure for the old popup pattern.</div></div></div>
+                  <div class="review-item"><div class="review-dot" style="background: var(--info, var(--c-cyan));"></div><div><strong>Lift Dane’s whole editor</strong><div class="body-sm">Chain builder, leg config, operating schedule, timeline preview, simulator and client overrides should stay intact.</div></div></div>
+                  <div class="review-item"><div class="review-dot" style="background: var(--warning);"></div><div><strong>Clear handoff state matters</strong><div class="body-sm">Use an explicit “Open full-screen schedule editor” action with readiness status so operators know exactly when they are leaving the summary layer.</div></div></div>
+                  <div class="review-item"><div class="review-dot" style="background: var(--error);"></div><div><strong>Do not rebuild a fake mini-builder</strong><div class="body-sm">The real schedules editor already exists and should be reused rather than approximated again.</div></div></div>
                 </div>
               </div>
             </div>
