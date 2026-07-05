@@ -1323,7 +1323,7 @@ body { margin: 0; font-size: var(--text-md); line-height: var(--lh-norm); -webki
       },
       flight: {
         title: 'New Flight Rate',
-        subtitle: 'Air-freight setup with explicit break pricing and unit dependencies surfaced inline.',
+        subtitle: 'Use the same right-hand drawer pattern as zone rates, but with the richer airfreight fields and lookup/filter context surfaced inline.',
         stepper: true,
         actions: { secondary: 'Save draft', ghost: 'Back', primary: 'Next step' },
         html: `
@@ -1332,39 +1332,60 @@ body { margin: 0; font-size: var(--text-md); line-height: var(--lh-norm); -webki
             <div class="fields">
               <div><div class="label">Name</div><input class="input" value="AKL Med Critical" /></div>
               <div><div class="label">Client</div><select><option>Zimmer Biomet NZ</option></select></div>
-              <div><div class="label">Rate Card</div><select><option>Medical Air Priority</option></select></div>
+              <div><div class="label">Status</div><select><option>Draft</option><option>Active</option></select></div>
+              <div><div class="label">Owner</div><input class="input" value="Business pricing team" /></div>
+              <div><div class="label">From airport</div><select><option>Auckland</option></select></div>
+              <div><div class="label">To airport</div><select><option>Wellington</option></select></div>
               <div><div class="label">Service</div><select><option>Air Critical</option></select></div>
               <div><div class="label">Vehicle</div><select><option>Van</option></select></div>
-              <div><div class="label">Status</div><select><option>Draft</option></select></div>
             </div>
           </div>
           <div class="drawer-card">
-            <h3>Flight Pricing</h3>
+            <h3>Commercial & rate filters</h3>
+            <div class="fields">
+              <div><div class="label">Customer group</div><select><option>Medical</option></select></div>
+              <div><div class="label">Rate category</div><select><option>Flight only</option></select></div>
+              <div><div class="label">Weight type</div><select><option>Chargeable weight</option></select></div>
+              <div><div class="label">Unit</div><select><option>kg</option></select></div>
+              <div><div class="label">Break group</div><select><option>Air Cargo Weight Breaks</option></select></div>
+              <div><div class="label">Apply to route</div><select><option>AKL → WLG</option></select></div>
+              <div><div class="label">Effective from</div><input class="input" value="01 Jul 2026" /></div>
+              <div><div class="label">Effective to</div><input class="input" value="Open" /></div>
+            </div>
+          </div>
+          <div class="drawer-card">
+            <h3>Airfreight pricing</h3>
             <div class="fields">
               <div><div class="label">Flight base charge</div><input class="input" value="$48.00" /></div>
               <div><div class="label">Apply base fuel</div><select><option>Yes</option></select></div>
+              <div><div class="label">Security surcharge</div><input class="input" value="$6.50" /></div>
+              <div><div class="label">Critical surcharge</div><input class="input" value="$18.00" /></div>
+              <div><div class="label">Min charge</div><input class="input" value="$48.00" /></div>
+              <div><div class="label">Documentation fee</div><input class="input" value="$4.00" /></div>
               <div><div class="label">Cargo breakpoint</div><input class="input" value="10 kg" /></div>
               <div><div class="label">Below breakpoint charge</div><input class="input" value="$7.00" /></div>
               <div><div class="label">Above breakpoint rate</div><input class="input" value="$0.85 / kg" /></div>
               <div><div class="label">Cargo fuel</div><select><option>Yes</option></select></div>
-              <div><div class="label">Security surcharge</div><input class="input" value="$6.50" /></div>
-              <div><div class="label">Critical surcharge</div><input class="input" value="$18.00" /></div>
+              <div><div class="label">Driver pay basis</div><select><option>Fixed per job</option></select></div>
+              <div><div class="label">Driver pay amount</div><input class="input" value="$22.00" /></div>
             </div>
           </div>
           <div class="drawer-card">
-            <h3>Linked Components</h3>
+            <h3>Right-hand lookup / filter context</h3>
             <div class="deps">
-              <div class="dep"><div><strong>Break group</strong><span>Air Cargo Weight Breaks</span></div><span class="badge success">Connected</span></div>
-              <div class="dep"><div><strong>Unit type</strong><span>kg</span></div><span class="badge success">Connected</span></div>
-              <div class="dep"><div><strong>Extra charge</strong><span>Air documentation fee</span></div><span class="badge warning">Optional</span></div>
-              <div class="dep"><div><strong>Service mapping</strong><span>Air Critical → flight rating</span></div><span class="badge success">Connected</span></div>
+              <div class="dep"><div><strong>Matched airports</strong><span>Auckland ↔ Wellington active lane pair</span></div><span class="badge success">Matched</span></div>
+              <div class="dep"><div><strong>Available client filters</strong><span>Medical, priority, temperature-sensitive</span></div><span class="badge info">Filter set</span></div>
+              <div class="dep"><div><strong>Existing similar rates</strong><span>5 active rates share the same security surcharge</span></div><span class="badge warning">Review</span></div>
+              <div class="dep"><div><strong>Break group health</strong><span>Air Cargo Weight Breaks uses kg and is ready</span></div><span class="badge success">Connected</span></div>
+              <div class="dep"><div><strong>Potential conflicts</strong><span>One overlapping draft exists for AKL → WLG medical urgent</span></div><span class="badge warning">Check</span></div>
             </div>
           </div>
           <div class="drawer-card">
             <h3>Review</h3>
             <div class="review-list">
-              <div class="review-item"><div class="review-dot" style="background: var(--success);"></div><div><strong>All required dependencies present</strong><div class="body-sm">Break group and unit type are both attached.</div></div></div>
-              <div class="review-item"><div class="review-dot" style="background: var(--warning);"></div><div><strong>Consider templating</strong><div class="body-sm">Security surcharge matches 5 other rates and may be a candidate for reuse later.</div></div></div>
+              <div class="review-item"><div class="review-dot" style="background: var(--success);"></div><div><strong>Drawer pattern now matches zone-rate behaviour</strong><div class="body-sm">No separate popup — all airfreight setup lives in the right-hand drawer.</div></div></div>
+              <div class="review-item"><div class="review-dot" style="background: var(--success);"></div><div><strong>All required dependencies present</strong><div class="body-sm">Airport lane, break group and unit type are attached.</div></div></div>
+              <div class="review-item"><div class="review-dot" style="background: var(--warning);"></div><div><strong>Consider templating</strong><div class="body-sm">Security surcharge matches several other rates and may become reusable later.</div></div></div>
             </div>
           </div>`
       },
